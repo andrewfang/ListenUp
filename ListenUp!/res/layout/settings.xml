@@ -11,6 +11,12 @@
         android:text="" />
 
     <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,19 +26,24 @@
         android:id="@+id/checkBox1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Loud Noise/ Voice" />
+        android:text="Loud Noise/ Voice"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <CheckBox
         android:id="@+id/checkBox2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Caller ID" />
+        android:text="Caller ID" 
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+        
 
     <CheckBox
         android:id="@+id/checkBox3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pause Music" />
+        android:text="Pause Music" 
+       android:textAppearance="?android:attr/textAppearanceMedium" />
+        
 
     <TextView
         android:id="@+id/textView5"
