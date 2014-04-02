@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
         start.setOnClickListener(new OnClickListener(){
 
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				// TODO Auto-generated method stub
 				//moveTaskToBack(true);
 				Toast.makeText(getApplicationContext(), "Listening in background",
@@ -63,7 +63,8 @@ public class MainActivity extends Activity {
 		            if(backStack!=null){
 		        		            		
 		                if(backStack.get(0).equals(".MainActivity")){
-		                    moveTaskToBack(true); // or finish() if you want to finish it. I don't.
+                            moveTaskToBack(true); // or finish() if you want to finish it. I don't.
+//                            finish();
 		                } else {
 		                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
 		                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -71,6 +72,8 @@ public class MainActivity extends Activity {
 		                    finish();
 		                }
 		            }
+                //Put notification icon in taskbar
+                startNotification();
 			}
         });
         
@@ -79,14 +82,12 @@ public class MainActivity extends Activity {
 //					.add(R.id.container, new PlaceholderFragment()).commit();
 //		}
 		
-		//Put notification icon in taskbar
-		startNotification();
+
 		
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
@@ -96,7 +97,7 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	    case R.id.start_page:
+//	    case R.id.start_page:
 	    	/* AlertDialog dialog = new AlertDialog.Builder(this)
 	         .setMessage(Html.fromHtml("<font color='#359CFC'>" + "In Home"))
 	         .setTitle("Menu")
@@ -119,27 +120,9 @@ public class MainActivity extends Activity {
 	    	  startActivity(goToCanvas);
 	        return true;
 	    default:
-	        return super.onOptionsItemSelected(item);
+//	        return super.onOptionsItemSelected(item);
+            return false;
 	    }
-	//	return false;
-	}
-
-
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
 	}
 	
 	private void startNotification() {
@@ -174,11 +157,5 @@ public class MainActivity extends Activity {
 		// mNotifyId allows you to update the notification later on.
 		mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
-
-    public void start() {
-        Toast toast = Toast.makeText(getApplicationContext(), "Test", Toast.LENGTH_SHORT);
-        toast.show();
-        Log.d("ANDREW", "aldkfalkd");
-    }
 
 }
