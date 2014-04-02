@@ -17,7 +17,7 @@
         android:id="@+id/imageView1"
         android:layout_width="59dp"
         android:layout_height="41dp"
-        android:src="@drawable/app_icon" />
+        android:src="@drawable/headphones" />
 
     <TextView
         android:id="@+id/textView7"
