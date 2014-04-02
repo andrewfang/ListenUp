@@ -11,59 +11,34 @@
         android:id="@+id/imageView1"
         android:layout_width="108dp"
         android:layout_height="89dp"
+        android:layout_marginBottom="20dp"
         android:src="@drawable/app_icon" />
-    
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
 
-  
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
             android:text="Sound Meter"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#359CFC"
             android:textStyle="italic"
             android:typeface="serif" />	
-            		
-
-        <TextView
-            android:id="@+id/textView7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
         <ProgressBar
             android:id="@+id/progressBar1"
             style="?android:attr/progressBarStyleHorizontal"
+            android:layout_marginBottom="30dp"
             android:layout_width="140dp"
             android:layout_height="66dp" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
-
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
   
 
     <Button
         android:id="@+id/button_start"
         android:layout_width="154dp"
         android:layout_height="wrap_content"
-
-        android:text="Start"
-     
-        android:background="#359CFC" 
+        android:background="#359CFC"
         android:textColor="#ffffff"
         android:onClick="start"
          />
