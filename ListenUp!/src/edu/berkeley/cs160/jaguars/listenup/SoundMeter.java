@@ -15,7 +15,7 @@ public class SoundMeter{
             recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
             recorder.setOutputFile("/dev/null");
-            recorder.prepare();
+           // recorder.prepare();
         }
         recorder.start();
     }

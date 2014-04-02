@@ -3,32 +3,45 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center|center_horizontal"
-    android:orientation="vertical" >
+    android:orientation="vertical" 
+    android:background="#ffffff"
+    >
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sound Meter" 
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
-
-    <ProgressBar
-        android:id="@+id/progressBar1"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content" />
-
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="108dp"
+        android:layout_height="89dp"
+        android:src="@drawable/app_icon" />
+    
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="" />
+
+  
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sound Meter"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#359CFC"
+            android:textStyle="italic"
+            android:typeface="serif" />	
+            		
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            android:id="@+id/progressBar1"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="140dp"
+            android:layout_height="66dp" />
 
     <TextView
         android:id="@+id/textView6"
@@ -43,10 +56,13 @@
         android:text="" />
 
     <Button
-        android:id="@+id/button_capture"
+        android:id="@+id/button_start"
         android:layout_width="154dp"
         android:layout_height="wrap_content"
-        android:text="Start" />
+        android:text="Start"
+     
+        android:background="#359CFC" 
+        android:textColor="#ffffff"/>
 
     <LinearLayout
         android:layout_width="match_parent"
