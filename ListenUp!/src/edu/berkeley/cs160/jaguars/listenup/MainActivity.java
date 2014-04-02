@@ -25,11 +25,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-<<<<<<< HEAD
 import android.widget.Button;
 import android.widget.TextView;
-=======
->>>>>>> b642c87dbfc90358cd479c532d0629248268b80e
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -127,7 +124,6 @@ public class MainActivity extends Activity {
 	//	return false;
 	}
 
-<<<<<<< HEAD
 
 	/**
 	 * A placeholder fragment containing a simple view.
@@ -146,8 +142,6 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-=======
->>>>>>> b642c87dbfc90358cd479c532d0629248268b80e
 	private void startNotification() {
 		mBuilder =
 		        new NotificationCompat.Builder(this)
