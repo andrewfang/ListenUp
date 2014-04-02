@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -56,23 +57,6 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
-
-		public PlaceholderFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			return rootView;
-		}
-	}
-	
 	private void startNotification() {
 		mBuilder =
 		        new NotificationCompat.Builder(this)
@@ -103,5 +87,11 @@ public class MainActivity extends Activity {
 		// mNotifyId allows you to update the notification later on.
 		mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
+
+    public void start() {
+        Toast toast = Toast.makeText(getApplicationContext(), "Test", Toast.LENGTH_SHORT);
+        toast.show();
+        Log.d("ANDREW", "aldkfalkd");
+    }
 
 }
