@@ -7,26 +7,21 @@ import java.util.List;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
-import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.text.Html;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -34,6 +29,7 @@ public class MainActivity extends Activity {
 	public static final String TAG = "ListenUpMain";
 	private int mNotifyId = 1;
 	private NotificationCompat.Builder mBuilder;
+	private AudioManager mAudioManager;
 	
 	Button start;
 	
@@ -41,6 +37,8 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		//Start button on click
         start = (Button) findViewById(R.id.button_start);
         start.setOnClickListener(new OnClickListener(){
 
@@ -82,7 +80,35 @@ public class MainActivity extends Activity {
 //					.add(R.id.container, new PlaceholderFragment()).commit();
 //		}
 		
-
+        //Audio Manager
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    // Pause playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Resume playback 
+                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                	//mAudioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
+                	mAudioManager.abandonAudioFocus(this);
+                    // Stop playback
+                }
+            }
+        };
+        
+     // Request audio focus for playback
+        int result = mAudioManager.requestAudioFocus(afChangeListener,
+                                     // Use the music stream.
+                                     AudioManager.STREAM_MUSIC,
+                                     // Request permanent focus.
+                                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+           
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // Start playback.
+        	Log.d(TAG,"Got audio focus");
+        	// Abandon audio focus when playback complete    
+        	mAudioManager.abandonAudioFocus(afChangeListener);
+        }
 		
 	}
 
