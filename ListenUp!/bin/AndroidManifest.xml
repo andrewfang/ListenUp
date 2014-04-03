@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     
     <application
         android:allowBackup="true"
@@ -26,8 +29,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-          <activity android:name="edu.berkeley.cs160.jaguars.listenup.Settings" >
+          <activity
+              android:name="edu.berkeley.cs160.jaguars.listenup.Settings"
+              android:parentActivityName=".MainActivity"
+              android:label="Back to home">
         </activity>
+        
+          <receiver android:name=".RemoteControlReceiver">
+			    <intent-filter>
+			        <action android:name="android.intent.action.MEDIA_BUTTON" />
+			    </intent-filter>
+			</receiver>
       
     </application>
 

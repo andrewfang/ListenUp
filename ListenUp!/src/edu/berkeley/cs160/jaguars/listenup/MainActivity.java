@@ -16,6 +16,8 @@ import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -40,6 +42,7 @@ public class MainActivity extends Activity {
     private AudioRecord recorder;
     private boolean recording;
     private AudioEvent audioEvent;
+	private AudioManager mAudioManager;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +71,6 @@ public class MainActivity extends Activity {
 
                     if (backStack.get(0).equals(".MainActivity")) {
                         moveTaskToBack(true); // or finish() if you want to finish it. I don't.
-//                            finish();
                     } else {
                         Intent intent = new Intent(MainActivity.this, MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -111,7 +113,37 @@ public class MainActivity extends Activity {
                 }
             }
         });
-
+		
+        //Audio Manager
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    // Pause playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Resume playback 
+                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                	//mAudioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
+                	mAudioManager.abandonAudioFocus(this);
+                    // Stop playback
+                }
+            }
+        };
+        
+     // Request audio focus for playback
+        int result = mAudioManager.requestAudioFocus(afChangeListener,
+                                     // Use the music stream.
+                                     AudioManager.STREAM_MUSIC,
+                                     // Request permanent focus.
+                                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+           
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // Start playback.
+        	Log.d(TAG,"Got audio focus");
+        	// Abandon audio focus when playback complete    
+        	mAudioManager.abandonAudioFocus(afChangeListener);
+        }
+		
 	}
 
 
