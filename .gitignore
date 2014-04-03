@@ -4,3 +4,11 @@
 .DS_Store
 /ListenUp!/bin/classes/edu/berkeley/cs160/jaguars/listenup/
 *.class
+*.un~
+/.idea/*
+gradle/
+sync.sh
+syncToGit.sh
+gradlew
+gradlew.bat
+ListenUp.iml
