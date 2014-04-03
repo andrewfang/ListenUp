@@ -5,7 +5,7 @@
     android:gravity="center|center_horizontal"
     android:orientation="vertical" 
     android:background="#ffffff"
-    >
+    android:baselineAligned="false">
 
     <ImageView
         android:id="@+id/imageView1"
@@ -19,12 +19,11 @@
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:text="Sound Meter"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#359CFC"
             android:textStyle="italic"
-            android:typeface="serif" />	
+            android:typeface="serif" />
 
         <ProgressBar
             android:id="@+id/progressBar1"
@@ -32,15 +31,31 @@
             android:layout_marginBottom="30dp"
             android:layout_width="140dp"
             android:layout_height="100dp" />
-  
 
-    <Button
-        android:id="@+id/button_start"
-        android:layout_width="154dp"
+    <ToggleButton
+        android:id="@+id/startStop"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:textOn="Stop"
+        android:textOff="Start"
+        android:layout_marginBottom="20dp"
+        android:textSize="18sp"
         android:background="#359CFC"
         android:textColor="#ffffff"
-        android:text="@string/start"
+        android:gravity="center_horizontal" />
+
+
+    <Button
+        android:id="@+id/button_background"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:background="#359CFC"
+        android:textSize="18sp"
+        android:textColor="#ffffff"
+        android:text="@string/backgroundRun"
          />
 
 </LinearLayout>
