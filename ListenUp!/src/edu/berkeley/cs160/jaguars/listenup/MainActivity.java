@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import be.hogent.tarsos.dsp.AudioEvent;
@@ -31,8 +32,6 @@ import be.hogent.tarsos.dsp.AudioEvent;
 public class MainActivity extends Activity {
 
 	public static final String TAG = "ListenUpMain";
-	private int mNotifyId = 1;
-	private NotificationCompat.Builder mBuilder;
     static final int SAMPLE_RATE = 8000;
     private int bufferSize;
     private short[] buffer;
@@ -41,6 +40,8 @@ public class MainActivity extends Activity {
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
     private NotificationManager mNotificationManager;
+    private final int CUTOFF = 30000;
+    private boolean timeToUpdateMaxAmpBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class MainActivity extends Activity {
 
         this.initalizeAudioListener();
         this.initializeAudioManager();
-
+        this.initializeMaxAmpBar();
 	}
 
 
@@ -75,10 +76,11 @@ public class MainActivity extends Activity {
 	}
     @Override
     protected void onPause() {
-        this.recorder.release();
-        this.recorder = null;
         if (this.running) {
             this.startNotification();
+        } else {
+            this.recorder.release();
+            this.recorder = null;
         }
         super.onPause();
     }
@@ -108,12 +110,11 @@ public class MainActivity extends Activity {
      * Description here TODO
      */
 	private void startNotification() {
-		mBuilder =
-		        new NotificationCompat.Builder(this)
-		        .setSmallIcon(R.drawable.ic_launcher)
-		        .setContentTitle("ListenUp! is running")
-		        .setContentText("Click to resume")
-		        .setOngoing(true);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle("ListenUp! is running")
+                .setContentText("Click to resume")
+                .setOngoing(true);
 		// Creates an explicit intent for an Activity in your app
 		Intent resultIntent = new Intent(this, MainActivity.class);
 
@@ -136,7 +137,8 @@ public class MainActivity extends Activity {
 		mBuilder.setContentIntent(resultPendingIntent);
         this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		// mNotifyId allows you to update the notification later on.
-		this.mNotificationManager.notify(mNotifyId, mBuilder.build());
+        int mNotifyId = 1;
+        this.mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
 
     /**
@@ -144,8 +146,7 @@ public class MainActivity extends Activity {
      */
     public void runInBackground(View view) {
         if (this.running) {
-            Toast.makeText(getApplicationContext(), "Listening in background",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_LONG).show();
 
             ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(getApplicationContext().ACTIVITY_SERVICE);
             List<RunningTaskInfo> runningTaskInfoList = am.getRunningTasks(10);
@@ -183,15 +184,14 @@ public class MainActivity extends Activity {
         boolean isChecked = startStopButton.isChecked();
         if (isChecked) {
             this.running = true;
-//                    MainActivity.this.recorder.startRecording();
-//                    Thread recordingThread = new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            MainActivity.this.getAudioData();
-//                        }
-//                    });
-//
-//                    recordingThread.start();
+            this.recorder.startRecording();
+            Thread recordingThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MainActivity.this.processAudioData();
+                }
+            });
+            recordingThread.start();
         } else {
             this.running = false;
 //                    MainActivity.this.recorder.stop();
@@ -241,12 +241,32 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void getAudioData() {
+    private void processAudioData() {
         while (this.running) {
-            this.recorder.read(this.buffer, 0, this.bufferSize);
-            Arrays.sort(this.buffer);
-            Log.d("ANDREW", "" + this.buffer[0]);
-            this.buffer = new short[bufferSize];
+            if (this.timeToUpdateMaxAmpBar) {
+                this.timeToUpdateMaxAmpBar = false;
+                this.recorder.read(this.buffer, 0, this.bufferSize);
+                Arrays.sort(this.buffer);
+                final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize -1]);
+                this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
+                        maxAmpBar.setProgress(maxAmp);
+                    }
+                });
+                if (maxAmp > this.CUTOFF) {
+                    Log.d(TAG, "Loud sound detected!");
+                }
+                this.buffer = new short[bufferSize];
+            } else {
+                this.timeToUpdateMaxAmpBar = true;
+            }
+
         }
+    }
+
+    private void initializeMaxAmpBar(){
+        ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
+        maxAmpBar.setMax(39999);
     }
 }

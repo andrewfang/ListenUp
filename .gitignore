@@ -7,7 +7,7 @@
 *.un~
 /.idea/*
 gradle/
-sync.sh
+homeSync.sh
 syncToGit.sh
 gradlew
 gradlew.bat
