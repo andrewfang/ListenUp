@@ -91,6 +91,9 @@ public class MainActivity extends Activity {
         if (this.recorder == null) {
             this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
         }
+        if(this.running) {
+        	Log.d(TAG, "Running is true");
+        }
         if (this.mNotificationManager != null) {
             this.mNotificationManager.cancelAll();
         }
@@ -98,8 +101,10 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy(){
-        this.recorder.release();
-        this.recorder = null;
+    	if(this.recorder != null) {
+    		this.recorder.release();
+    		this.recorder = null;
+    	}
         if (this.mNotificationManager != null) {
             this.mNotificationManager.cancelAll();
         }
@@ -230,7 +235,7 @@ public class MainActivity extends Activity {
         int result = mAudioManager.requestAudioFocus(afChangeListener,
                 // Use the music stream.
                 AudioManager.STREAM_MUSIC,
-                // Request permanent focus.
+                // Request transient focus.
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -245,6 +250,10 @@ public class MainActivity extends Activity {
         while (this.running) {
             if (this.timeToUpdateMaxAmpBar) {
                 this.timeToUpdateMaxAmpBar = false;
+                //need to reinitialize recorder because it might be null??
+                if( this.recorder == null) {
+                	this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+                }
                 this.recorder.read(this.buffer, 0, this.bufferSize);
                 Arrays.sort(this.buffer);
                 final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize -1]);

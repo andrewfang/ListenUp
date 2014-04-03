@@ -35,6 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="     Loud Noise/ Voice"
+        android:checked="true"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#359CFC" />
 
@@ -42,7 +43,8 @@
         android:id="@+id/checkBox2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="     Caller ID" 
+        android:text="     Caller ID"
+        android:checked="true"
         android:textColor="#359CFC"
         android:textAppearance="?android:attr/textAppearanceMedium" />
         
@@ -51,7 +53,8 @@
         android:id="@+id/checkBox3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="     Pause Music" 
+        android:text="     Pause Music"
+        android:checked="true"
         android:textColor="#359CFC"
         android:textAppearance="?android:attr/textAppearanceMedium" />
         
@@ -79,6 +82,7 @@
     <SeekBar
         android:id="@+id/seekBar1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:progress="70" />
 
 </LinearLayout>
