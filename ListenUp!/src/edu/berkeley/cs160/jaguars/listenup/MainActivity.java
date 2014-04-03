@@ -24,9 +24,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import be.hogent.tarsos.dsp.AudioEvent;
@@ -51,37 +48,8 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
         this.initalizeAudioListener();
+        this.initializeAudioManager();
 
-        //Audio Manager
-        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
-            public void onAudioFocusChange(int focusChange) {
-                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
-                    // Pause playback
-                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-                    // Resume playback 
-                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-                	//mAudioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
-                	mAudioManager.abandonAudioFocus(this);
-                    // Stop playback
-                }
-            }
-        };
-        
-     // Request audio focus for playback
-        int result = mAudioManager.requestAudioFocus(afChangeListener,
-                                     // Use the music stream.
-                                     AudioManager.STREAM_MUSIC,
-                                     // Request permanent focus.
-                                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-           
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            // Start playback.
-        	Log.d(TAG,"Got audio focus");
-        	// Abandon audio focus when playback complete    
-        	mAudioManager.abandonAudioFocus(afChangeListener);
-        }
-		
 	}
 
 
@@ -98,8 +66,6 @@ public class MainActivity extends Activity {
 	    switch (item.getItemId()) {
 	    case R.id.action_settings:
 	    	  Intent goToCanvas = new Intent(MainActivity.this, Settings.class);
-	    	  //Bundle extras = goToCanvas.getExtras();
-	    	 // extras.putExtra("");
 	    	  startActivity(goToCanvas);
 	        return true;
 	    default:
@@ -127,7 +93,20 @@ public class MainActivity extends Activity {
             this.mNotificationManager.cancelAll();
         }
     }
-	
+
+    @Override
+    protected void onDestroy(){
+        this.recorder.release();
+        this.recorder = null;
+        if (this.mNotificationManager != null) {
+            this.mNotificationManager.cancelAll();
+        }
+        super.onDestroy();
+    }
+
+    /**
+     * Description here TODO
+     */
 	private void startNotification() {
 		mBuilder =
 		        new NotificationCompat.Builder(this)
@@ -160,6 +139,9 @@ public class MainActivity extends Activity {
 		this.mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
 
+    /**
+     * This is the method called by @+id/button_background in activity_main.xml
+     */
     public void runInBackground(View view) {
         if (this.running) {
             Toast.makeText(getApplicationContext(), "Listening in background",
@@ -192,6 +174,10 @@ public class MainActivity extends Activity {
                     Toast.LENGTH_SHORT).show();
         }
     }
+
+    /**
+     * This is the method called by @+id/startStop in activity_main.xml
+     */
     public void startStop(View view) {
         ToggleButton startStopButton = (ToggleButton) findViewById(R.id.startStop);
         boolean isChecked = startStopButton.isChecked();
@@ -212,12 +198,47 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * This sets up a buffer and instantiates a recorder that we will use to detect sound
+     */
     private void initalizeAudioListener() {
         this.bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         this.buffer = new short[bufferSize];
         this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
         be.hogent.tarsos.dsp.AudioFormat format = new be.hogent.tarsos.dsp.AudioFormat(SAMPLE_RATE, 16, 1, true, true);
         this.audioEvent = new AudioEvent(format, this.buffer.length);
+    }
+
+    private void initializeAudioManager() {
+        //Audio Manager
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
+            public void onAudioFocusChange(int focusChange) {
+                if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                    // Pause playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                    // Resume playback
+                } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                    //mAudioManager.unregisterMediaButtonEventReceiver(RemoteControlReceiver);
+                    mAudioManager.abandonAudioFocus(this);
+                    // Stop playback
+                }
+            }
+        };
+
+        // Request audio focus for playback
+        int result = mAudioManager.requestAudioFocus(afChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            // Start playback.
+            Log.d(TAG,"Got audio focus");
+            // Abandon audio focus when playback complete
+            mAudioManager.abandonAudioFocus(afChangeListener);
+        }
     }
 
     private void getAudioData() {
