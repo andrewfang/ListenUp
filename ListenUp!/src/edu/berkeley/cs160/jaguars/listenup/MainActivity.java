@@ -40,80 +40,18 @@ public class MainActivity extends Activity {
     private int bufferSize;
     private short[] buffer;
     private AudioRecord recorder;
-    private boolean recording;
+    private boolean running;
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
-	
+    private NotificationManager mNotificationManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-        Button backgroundButton = (Button) findViewById(R.id.button_background);
-        backgroundButton.setOnClickListener(new OnClickListener() {
 
-            @Override
-            public void onClick(View view) {
-                // TODO Auto-generated method stub
-                //moveTaskToBack(true);
-                Toast.makeText(getApplicationContext(), "Listening in background",
-                        Toast.LENGTH_LONG).show();
+        this.initalizeAudioListener();
 
-                ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(getApplicationContext().ACTIVITY_SERVICE);
-                List<RunningTaskInfo> runningTaskInfoList = am.getRunningTasks(10);
-                List<String> backStack = new ArrayList<String>();
-                Iterator<RunningTaskInfo> itr = runningTaskInfoList.iterator();
-                while (itr.hasNext()) {
-                    RunningTaskInfo runningTaskInfo = (RunningTaskInfo) itr.next();
-                    String topActivity = runningTaskInfo.topActivity.getShortClassName();
-                    backStack.add(topActivity.trim());
-                }
-                if (backStack != null) {
-
-                    if (backStack.get(0).equals(".MainActivity")) {
-                        moveTaskToBack(true); // or finish() if you want to finish it. I don't.
-                    } else {
-                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
-                        finish();
-                    }
-                }
-                //Put notification icon in taskbar
-                startNotification();
-            }
-        });
-
-        final ToggleButton startStopButton = (ToggleButton) findViewById(R.id.startStop);
-        this.bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        this.buffer = new short[bufferSize];
-        this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
-        be.hogent.tarsos.dsp.AudioFormat format = new be.hogent.tarsos.dsp.AudioFormat(SAMPLE_RATE, 16, 1, true, true);
-        this.audioEvent = new AudioEvent(format, this.buffer.length);
-
-        startStopButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                if (isChecked) {
-
-//                    MainActivity.this.recorder.startRecording();
-//                    MainActivity.this.recording = true;
-//                    Thread recordingThread = new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            MainActivity.this.getAudioData();
-//                        }
-//                    });
-//
-//                    recordingThread.start();
-                } else {
-//                    MainActivity.this.recorder.stop();
-//                    MainActivity.this.recording = false;
-                }
-            }
-        });
-		
         //Audio Manager
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
@@ -173,6 +111,9 @@ public class MainActivity extends Activity {
     protected void onPause() {
         this.recorder.release();
         this.recorder = null;
+        if (this.running) {
+            this.startNotification();
+        }
         super.onPause();
     }
 
@@ -181,6 +122,9 @@ public class MainActivity extends Activity {
         super.onResume();
         if (this.recorder == null) {
             this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+        }
+        if (this.mNotificationManager != null) {
+            this.mNotificationManager.cancelAll();
         }
     }
 	
@@ -211,14 +155,73 @@ public class MainActivity extends Activity {
 		
 		
 		mBuilder.setContentIntent(resultPendingIntent);
-		NotificationManager mNotificationManager =
-		    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		// mNotifyId allows you to update the notification later on.
-		mNotificationManager.notify(mNotifyId, mBuilder.build());
+		this.mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
 
+    public void runInBackground(View view) {
+        if (this.running) {
+            Toast.makeText(getApplicationContext(), "Listening in background",
+                    Toast.LENGTH_LONG).show();
+
+            ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(getApplicationContext().ACTIVITY_SERVICE);
+            List<RunningTaskInfo> runningTaskInfoList = am.getRunningTasks(10);
+            List<String> backStack = new ArrayList<String>();
+            Iterator<RunningTaskInfo> itr = runningTaskInfoList.iterator();
+            while (itr.hasNext()) {
+                RunningTaskInfo runningTaskInfo = (RunningTaskInfo) itr.next();
+                String topActivity = runningTaskInfo.topActivity.getShortClassName();
+                backStack.add(topActivity.trim());
+            }
+            if (backStack != null) {
+
+                if (backStack.get(0).equals(".MainActivity")) {
+                    moveTaskToBack(true); // or finish() if you want to finish it. I don't.
+                } else {
+                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+            //Put notification icon in taskbar
+            startNotification();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please press start first",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+    public void startStop(View view) {
+        ToggleButton startStopButton = (ToggleButton) findViewById(R.id.startStop);
+        boolean isChecked = startStopButton.isChecked();
+        if (isChecked) {
+            this.running = true;
+//                    MainActivity.this.recorder.startRecording();
+//                    Thread recordingThread = new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            MainActivity.this.getAudioData();
+//                        }
+//                    });
+//
+//                    recordingThread.start();
+        } else {
+            this.running = false;
+//                    MainActivity.this.recorder.stop();
+        }
+    }
+
+    private void initalizeAudioListener() {
+        this.bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        this.buffer = new short[bufferSize];
+        this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+        be.hogent.tarsos.dsp.AudioFormat format = new be.hogent.tarsos.dsp.AudioFormat(SAMPLE_RATE, 16, 1, true, true);
+        this.audioEvent = new AudioEvent(format, this.buffer.length);
+    }
+
     private void getAudioData() {
-        while (this.recording) {
+        while (this.running) {
             this.recorder.read(this.buffer, 0, this.bufferSize);
             Arrays.sort(this.buffer);
             Log.d("ANDREW", "" + this.buffer[0]);

@@ -43,6 +43,7 @@
         android:textSize="18sp"
         android:background="#359CFC"
         android:textColor="#ffffff"
+        android:onClick="startStop"
         android:gravity="center_horizontal" />
 
 
@@ -56,6 +57,7 @@
         android:textSize="18sp"
         android:textColor="#ffffff"
         android:text="@string/backgroundRun"
+        android:onClick="runInBackground"
          />
 
 </LinearLayout>
