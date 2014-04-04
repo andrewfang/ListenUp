@@ -10,14 +10,14 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
+import android.media.AudioRecord;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private boolean running;
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
+	private OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
     private final int CUTOFF = 30000;
     private boolean timeToUpdateMaxAmpBar;
@@ -220,7 +221,7 @@ public class MainActivity extends Activity {
     private void initializeAudioManager() {
         //Audio Manager
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        OnAudioFocusChangeListener afChangeListener = new OnAudioFocusChangeListener() {
+        afChangeListener = new OnAudioFocusChangeListener() {
             public void onAudioFocusChange(int focusChange) {
                 if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
                     // Pause playback
@@ -233,24 +234,38 @@ public class MainActivity extends Activity {
                 }
             }
         };
+        
+        //play sound on init for testing
+        playSound();
 
+    }
+    
+    //Play the loud sound
+    //Should we do all of this in a new thread?
+    private void playSound() {
         // Request audio focus for playback
-        int result = mAudioManager.requestAudioFocus(afChangeListener,
+        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
                 // Use the music stream.
                 AudioManager.STREAM_MUSIC,
                 // Request transient focus.
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        	
             //Mute music stream
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
             
-            // Start playback.
-            Log.d(TAG,"Got audio focus");
+            // Start playback
+            //Replace this sound with the microphone audio
+            MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
+            mediaPlayer.start();
+            //Log.d(TAG,"Got audio focus");
+            
+            //Pause for some seconds.
             
             // Abandon audio focus when playback complete
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-            mAudioManager.abandonAudioFocus(afChangeListener);
+            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+            this.mAudioManager.abandonAudioFocus(afChangeListener);
         }
     }
 
@@ -273,6 +288,7 @@ public class MainActivity extends Activity {
                 });
                 if (maxAmp > this.CUTOFF) {
                     Log.d(TAG, "Loud sound detected!");
+                    playSound();
                 }
                 this.buffer = new short[bufferSize];
             } else {
