@@ -122,27 +122,30 @@ public class MainActivity extends Activity {
                 .setOngoing(true);
 		// Creates an explicit intent for an Activity in your app
 		Intent resultIntent = new Intent(this, MainActivity.class);
-
-		// The stack builder object will contain an artificial back stack for the
-		// started Activity.
-		// This ensures that navigating backward from the Activity leads out of
-		// your application to the Home screen.
-		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-		// Adds the back stack for the Intent (but not the Intent itself)
-		stackBuilder.addParentStack(MainActivity.class);
-		// Adds the Intent that starts the Activity to the top of the stack
-		stackBuilder.addNextIntent(resultIntent);
-		PendingIntent resultPendingIntent =
-		        stackBuilder.getPendingIntent(
-		            0,
-		            PendingIntent.FLAG_UPDATE_CURRENT
-		        );
-		
-		
-		mBuilder.setContentIntent(resultPendingIntent);
-        this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		//resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		// mNotifyId allows you to update the notification later on.
         int mNotifyId = 1;
+		
+		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, mNotifyId);
+//		// The stack builder object will contain an artificial back stack for the
+//		// started Activity.
+//		// This ensures that navigating backward from the Activity leads out of
+//		// your application to the Home screen.
+//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+//		// Adds the back stack for the Intent (but not the Intent itself)
+//		stackBuilder.addParentStack(MainActivity.class);
+//		// Adds the Intent that starts the Activity to the top of the stack
+//		stackBuilder.addNextIntent(resultIntent);
+//		PendingIntent resultPendingIntent =
+//		        stackBuilder.getPendingIntent(
+//		            0,
+//		            PendingIntent.FLAG_UPDATE_CURRENT
+//		        );
+//		
+//		
+		mBuilder.setContentIntent(resultPendingIntent);
+        this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
         this.mNotificationManager.notify(mNotifyId, mBuilder.build());
 	}
 
