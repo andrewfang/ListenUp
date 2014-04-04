@@ -242,9 +242,14 @@ public class MainActivity extends Activity {
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            //Mute music stream
+            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+            
             // Start playback.
             Log.d(TAG,"Got audio focus");
+            
             // Abandon audio focus when playback complete
+            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
             mAudioManager.abandonAudioFocus(afChangeListener);
         }
     }
