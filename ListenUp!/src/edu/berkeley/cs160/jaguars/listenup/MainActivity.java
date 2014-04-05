@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
 	private OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
     private final int CUTOFF = 30000;
+    public int timer = 2;
     private boolean timeToUpdateMaxAmpBar;
 
 	@Override
@@ -234,7 +235,7 @@ public class MainActivity extends Activity {
         			} else {
         				mIsRecording = true;
         				// STEP 4: start recording
-        				loopbackAudio();
+        				//loopbackAudio();
         				// END STEP 4
         			}
                 }
@@ -262,18 +263,21 @@ public class MainActivity extends Activity {
     
  // STEP 3: while the audio is recording, play back the audio
  	public void loopbackAudio() {
- 		recorder.startRecording();
+ 		//recorder.startRecording();
  		audioTrack.play();
 
  		//Thread loopbackThread = new Thread(new Runnable() {
 
  			//@Override
  			//public void run() {
- 				while (mIsRecording) {
+ 				
+ 				while (timer > 0) {
  					int bufferReadResult = recorder.read(buffer, 0, buffer.length);
  					audioTrack.write(buffer, 0, bufferReadResult);
+ 					timer = timer - 1;
  				}
- 				recorder.stop();
+ 				timer = 2;
+ 				//recorder.stop();
  				audioTrack.stop();
  				audioTrack.flush();
  		//	}
@@ -332,8 +336,8 @@ public class MainActivity extends Activity {
 
             // Start playback
             //Replace this sound with the microphone audio
-           // MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
-           // mediaPlayer.start();
+           MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
+           mediaPlayer.start();
             //Log.d(TAG,"Got audio focus");
 
             //Pause for some seconds.
@@ -363,8 +367,9 @@ public class MainActivity extends Activity {
                 });
                 if (maxAmp > this.CUTOFF) {
                     Log.d(TAG, "Loud sound detected!");
+                    loopbackAudio();
+                    //playSound();
                     
-                    playSound();
                 }
                 this.buffer = new short[bufferSize];
             } else {
