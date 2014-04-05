@@ -13,12 +13,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
-<<<<<<< HEAD
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-=======
->>>>>>> 8238869a2b9cac2cc677e03bfa76faf5a431fd8e
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.AudioRecord;
@@ -45,11 +42,8 @@ public class MainActivity extends Activity {
     private boolean running, mIsRecording;
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
-<<<<<<< HEAD
 	private AudioTrack audioTrack;
-=======
 	private OnAudioFocusChangeListener afChangeListener;
->>>>>>> 8238869a2b9cac2cc677e03bfa76faf5a431fd8e
     private NotificationManager mNotificationManager;
     private final int CUTOFF = 30000;
     private boolean timeToUpdateMaxAmpBar;
@@ -338,8 +332,8 @@ public class MainActivity extends Activity {
 
             // Start playback
             //Replace this sound with the microphone audio
-            MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
-            mediaPlayer.start();
+           // MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
+           // mediaPlayer.start();
             //Log.d(TAG,"Got audio focus");
 
             //Pause for some seconds.
@@ -369,11 +363,8 @@ public class MainActivity extends Activity {
                 });
                 if (maxAmp > this.CUTOFF) {
                     Log.d(TAG, "Loud sound detected!");
-<<<<<<< HEAD
                     
-=======
                     playSound();
->>>>>>> 8238869a2b9cac2cc677e03bfa76faf5a431fd8e
                 }
                 this.buffer = new short[bufferSize];
             } else {
