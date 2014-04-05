@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
@@ -36,9 +37,10 @@ public class MainActivity extends Activity {
     private int bufferSize;
     private short[] buffer;
     private AudioRecord recorder;
-    private boolean running;
+    private boolean running, mIsRecording;
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
+	private AudioTrack audioTrack;
     private NotificationManager mNotificationManager;
     private final int CUTOFF = 30000;
     private boolean timeToUpdateMaxAmpBar;
@@ -51,6 +53,10 @@ public class MainActivity extends Activity {
         this.initalizeAudioListener();
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
+        this.initializeAudioTrack();
+        
+        mIsRecording = false;
+
 	}
 
 
@@ -74,6 +80,7 @@ public class MainActivity extends Activity {
             return false;
 	    }
 	}
+	
     @Override
     protected void onPause() {
         if (this.running) {
@@ -191,21 +198,66 @@ public class MainActivity extends Activity {
         ToggleButton startStopButton = (ToggleButton) findViewById(R.id.startStop);
         boolean isChecked = startStopButton.isChecked();
         if (isChecked) {
+        	
             this.running = true;
             this.recorder.startRecording();
             Thread recordingThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     MainActivity.this.processAudioData();
+                    if (mIsRecording) {
+        				mIsRecording = false;
+        			} else {
+        				mIsRecording = true;
+        				// STEP 4: start recording
+        				loopbackAudio();
+        				// END STEP 4
+        			}
                 }
             });
             recordingThread.start();
+            
+           
         } else {
             this.running = false;
 //                    MainActivity.this.recorder.stop();
         }
     }
+    
+    
+    private void initializeAudioTrack() {
+    		// STEP 2: setup AudioTrack - for audio output
+    		audioTrack = new AudioTrack(
+    		AudioManager.STREAM_MUSIC,
+    		SAMPLE_RATE,
+    		AudioFormat.CHANNEL_OUT_MONO,
+    		AudioFormat.ENCODING_PCM_16BIT,
+    		bufferSize,
+    		AudioTrack.MODE_STREAM);
+    }
+    
+ // STEP 3: while the audio is recording, play back the audio
+ 	public void loopbackAudio() {
+ 		recorder.startRecording();
+ 		audioTrack.play();
 
+ 		//Thread loopbackThread = new Thread(new Runnable() {
+
+ 			//@Override
+ 			//public void run() {
+ 				while (mIsRecording) {
+ 					int bufferReadResult = recorder.read(buffer, 0, buffer.length);
+ 					audioTrack.write(buffer, 0, bufferReadResult);
+ 				}
+ 				recorder.stop();
+ 				audioTrack.stop();
+ 				audioTrack.flush();
+ 		//	}
+
+ 	//	});
+
+ 		//loopbackThread.start();
+ 	}
     /**
      * This sets up a buffer and instantiates a recorder that we will use to detect sound
      */
@@ -268,6 +320,7 @@ public class MainActivity extends Activity {
                 });
                 if (maxAmp > this.CUTOFF) {
                     Log.d(TAG, "Loud sound detected!");
+                    
                 }
                 this.buffer = new short[bufferSize];
             } else {
