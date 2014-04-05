@@ -83,7 +83,26 @@ public class MainActivity extends Activity {
             this.recorder.release();
             this.recorder = null;
         }
+        Log.d(TAG,"pausing...");
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        if (this.running) {
+            this.startNotification();
+        } else if (this.recorder != null) {
+            this.recorder.release();
+            this.recorder = null;
+        }
+        Log.d(TAG,"stopping...");
+        super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "Back pressed...");
+        Toast.makeText(getApplicationContext(), "Please press home instead", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -102,6 +121,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy(){
+        Log.d(TAG, "destroying...");
     	if(this.recorder != null) {
     		this.recorder.release();
     		this.recorder = null;
@@ -118,6 +138,7 @@ public class MainActivity extends Activity {
 	private void startNotification() {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_launcher)
+                .setAutoCancel(true)
                 .setContentTitle("ListenUp! is running")
                 .setContentText("Click to resume")
                 .setOngoing(true);
@@ -126,7 +147,7 @@ public class MainActivity extends Activity {
 		//resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		// mNotifyId allows you to update the notification later on.
         int mNotifyId = 1;
-		
+
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, mNotifyId);
 //		// The stack builder object will contain an artificial back stack for the
 //		// started Activity.
@@ -142,8 +163,8 @@ public class MainActivity extends Activity {
 //		            0,
 //		            PendingIntent.FLAG_UPDATE_CURRENT
 //		        );
-//		
-//		
+//
+//
 		mBuilder.setContentIntent(resultPendingIntent);
         this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -234,12 +255,12 @@ public class MainActivity extends Activity {
                 }
             }
         };
-        
+
         //play sound on init for testing
-        playSound();
+//        playSound();
 
     }
-    
+
     //Play the loud sound
     //Should we do all of this in a new thread?
     private void playSound() {
@@ -251,18 +272,18 @@ public class MainActivity extends Activity {
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-        	
+
             //Mute music stream
             this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-            
+
             // Start playback
             //Replace this sound with the microphone audio
             MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
             mediaPlayer.start();
             //Log.d(TAG,"Got audio focus");
-            
+
             //Pause for some seconds.
-            
+
             // Abandon audio focus when playback complete
             this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
             this.mAudioManager.abandonAudioFocus(afChangeListener);
