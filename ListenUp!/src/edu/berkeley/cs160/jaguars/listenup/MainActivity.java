@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -22,6 +23,7 @@ import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
@@ -48,18 +50,22 @@ public class MainActivity extends Activity {
     private final int CUTOFF = 30000;
     public int timer = 2;
     private boolean timeToUpdateMaxAmpBar;
+    private TextToSpeech ttobj;
+    private String phoneInfo;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		
         this.initalizeAudioListener();
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
         
         mIsRecording = false;
+      
+        
 
 	}
 
@@ -94,8 +100,11 @@ public class MainActivity extends Activity {
             this.recorder = null;
         }
         Log.d(TAG,"pausing...");
+       
         super.onPause();
     }
+    
+    
 
     @Override
     protected void onStop() {

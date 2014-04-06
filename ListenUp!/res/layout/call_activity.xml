@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="212dp"
+        android:layout_height="226dp"
+        android:src="@drawable/callFrom" />
+
+    <TextView
+        android:id="@+id/tvCallFrom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/callFrom"
+        android:textColor="#359CFC"
+        android:textStyle="italic"
+        android:typeFace="serif"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/tvContactName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/contactName"
+        android:textColor="#359CFC"
+        android:textStyle="bold"
+        android:typeFace="serif"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/tvPhoneNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/phoneNo"
+        android:textColor="#359CFC"
+        android:textStyle="bold"
+        android:typeFace="serif"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</LinearLayout>
