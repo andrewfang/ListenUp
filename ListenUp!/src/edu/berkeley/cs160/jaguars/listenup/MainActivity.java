@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 	private OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
     private final int CUTOFF = 30000;
-    public int timer = 2;
+    public int timer = 5;
     private boolean timeToUpdateMaxAmpBar;
     private TextToSpeech ttobj;
     private String phoneInfo;
@@ -272,6 +272,14 @@ public class MainActivity extends Activity {
     
  // STEP 3: while the audio is recording, play back the audio
  	public void loopbackAudio() {
+        // Request audio focus for playback
+        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request transient focus.
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
  		//recorder.startRecording();
  		audioTrack.play();
 
@@ -285,13 +293,16 @@ public class MainActivity extends Activity {
  					audioTrack.write(buffer, 0, bufferReadResult);
  					timer = timer - 1;
  				}
- 				timer = 2;
+ 				timer = 5;
  				//recorder.stop();
  				audioTrack.stop();
  				audioTrack.flush();
  		//	}
 
  	//	});
+ 	            // Abandon audio focus when playback complete
+ 	            this.mAudioManager.abandonAudioFocus(afChangeListener);
+        }
 
  		//loopbackThread.start();
  	}
