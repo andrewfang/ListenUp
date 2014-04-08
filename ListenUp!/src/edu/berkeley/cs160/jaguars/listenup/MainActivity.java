@@ -29,6 +29,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -51,6 +53,9 @@ public class MainActivity extends Activity {
     private int CUTOFF = 30000;
     public int timer = 5;
     private boolean timeToUpdateMaxAmpBar;
+    private boolean careAboutMusic = true;
+    private boolean careAboutLoud = true;
+    private boolean careAboutCall = true;
     private TextToSpeech ttobj;
     private String phoneInfo;
 
@@ -423,6 +428,32 @@ public class MainActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 // TODO Auto-generated method stub
                 MainActivity.this.CUTOFF = (int) (progress/100.0) * 50000;
+            }
+        });
+    }
+
+    private void initalizeCheckboxes() {
+        CheckBox cBoxLoud = (CheckBox)findViewById(R.id.checkBoxLoud);
+        CheckBox cboxMusic = (CheckBox)findViewById(R.id.checkBoxMusic);
+        CheckBox cboxCall = (CheckBox)findViewById(R.id.checkBoxCall);
+        cBoxLoud.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                MainActivity.this.careAboutLoud = isChecked;
+            }
+        });
+
+        cboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                MainActivity.this.careAboutMusic = isChecked;
+            }
+        });
+
+        cboxCall.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+                MainActivity.this.careAboutCall = isChecked;
             }
         });
     }

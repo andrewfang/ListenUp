@@ -31,7 +31,7 @@
     </LinearLayout>
 
     <CheckBox
-        android:id="@+id/checkBox1"
+        android:id="@+id/checkBoxLoud"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="     Loud Noise/ Voice"
@@ -40,7 +40,7 @@
         android:textColor="#359CFC" />
 
     <CheckBox
-        android:id="@+id/checkBox2"
+        android:id="@+id/checkBoxCall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="     Caller ID"
@@ -50,7 +50,7 @@
         
 
     <CheckBox
-        android:id="@+id/checkBox3"
+        android:id="@+id/checkBoxMusic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="     Pause Music"
