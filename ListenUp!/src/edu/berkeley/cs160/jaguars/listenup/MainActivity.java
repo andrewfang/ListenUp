@@ -238,24 +238,26 @@ public class MainActivity extends Activity {
         if (isChecked) {
         	
             this.running = true;
-            this.recorder.startRecording();
-            Thread recordingThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.processAudioData();
-                    if (mIsRecording) {
-        				mIsRecording = false;
-        			} else {
-        				mIsRecording = true;
-        				// STEP 4: start recording
-        				//loopbackAudio();
-        				// END STEP 4
-        			}
-                }
-            });
-            recordingThread.start();
-            
-           
+            //I'm going to wrap the entire recording/listening thing in this careAboutLoud boolean. May need to move it
+            if (this.careAboutLoud) {
+                this.recorder.startRecording();
+                Thread recordingThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity.this.processAudioData();
+                        if (mIsRecording) {
+                            mIsRecording = false;
+                        } else {
+                            mIsRecording = true;
+                            // STEP 4: start recording
+                            //loopbackAudio();
+                            // END STEP 4
+                        }
+                    }
+                });
+                recordingThread.start();
+            }
+
         } else {
             this.running = false;
 //                    MainActivity.this.recorder.stop();
@@ -374,32 +376,26 @@ public class MainActivity extends Activity {
 
     private void processAudioData() {
         while (this.running) {
-            if (this.timeToUpdateMaxAmpBar) {
-                this.timeToUpdateMaxAmpBar = false;
-                //need to reinitialize recorder because it might be null??
-                if( this.recorder == null) {
-                	this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
-                }
-                this.recorder.read(this.buffer, 0, this.bufferSize);
-                Arrays.sort(this.buffer);
-                final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize -1]);
-                this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
-                        maxAmpBar.setProgress(maxAmp);
-                    }
-                });
-                if (maxAmp > this.CUTOFF) {
-                    Log.d(TAG, "Loud sound detected. CUTOFF value= " + this.CUTOFF);
-                    loopbackAudio();
-                    //playSound();
-                    
-                }
-                this.buffer = new short[bufferSize];
-            } else {
-                this.timeToUpdateMaxAmpBar = true;
+            //need to reinitialize recorder because it might be null??
+            if( this.recorder == null) {
+                this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
             }
+            this.recorder.read(this.buffer, 0, this.bufferSize);
+            Arrays.sort(this.buffer);
+            final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize -1]);
+            this.runOnUiThread(new Runnable() {
+                public void run() {
+                    ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
+                    maxAmpBar.setProgress(maxAmp);
+                }
+            });
+            if (maxAmp > this.CUTOFF) {
+                Log.d(TAG, "Loud sound detected. CUTOFF value= " + this.CUTOFF);
+                loopbackAudio();
+                //playSound();
 
+            }
+            this.buffer = new short[bufferSize];
         }
     }
 
