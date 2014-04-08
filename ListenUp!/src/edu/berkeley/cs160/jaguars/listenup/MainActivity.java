@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import be.hogent.tarsos.dsp.AudioEvent;
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
 	private AudioTrack audioTrack;
 	private OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
-    private final int CUTOFF = 30000;
+    private int CUTOFF = 30000;
     public int timer = 5;
     private boolean timeToUpdateMaxAmpBar;
     private TextToSpeech ttobj;
@@ -62,11 +63,9 @@ public class MainActivity extends Activity {
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
+        this.initalizeSeekBar();
         
         mIsRecording = false;
-      
-        
-
 	}
 
 
@@ -386,7 +385,7 @@ public class MainActivity extends Activity {
                     }
                 });
                 if (maxAmp > this.CUTOFF) {
-                    Log.d(TAG, "Loud sound detected!");
+                    Log.d(TAG, "Loud sound detected. CUTOFF value= " + this.CUTOFF);
                     loopbackAudio();
                     //playSound();
                     
@@ -399,8 +398,32 @@ public class MainActivity extends Activity {
         }
     }
 
+
+
     private void initializeMaxAmpBar(){
         ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
         maxAmpBar.setMax(39999);
+    }
+
+    private void initalizeSeekBar(){
+        final SeekBar seek=(SeekBar) findViewById(R.id.seekBar1);
+        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO Auto-generated method stub
+                MainActivity.this.CUTOFF = (int) (progress/100.0) * 50000;
+            }
+        });
     }
 }
