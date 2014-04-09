@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
-        this.initalizeSeekBar();
+        //this.initalizeSeekBar();
         
         mIsRecording = false;
 	}
@@ -278,14 +278,20 @@ public class MainActivity extends Activity {
     
  // STEP 3: while the audio is recording, play back the audio
  	public void loopbackAudio() {
-        // Request audio focus for playback
-        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
-                // Use the music stream.
-                AudioManager.STREAM_MUSIC,
-                // Request transient focus.
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+ 		
+ 		int result = 0;
+ 		
+ 		// Check if we are supposed to pause music
+ 		if(this.careAboutMusic) {
+	        // Request audio focus for playback
+	        result = this.mAudioManager.requestAudioFocus(afChangeListener,
+	                // Use the music stream.
+	                AudioManager.STREAM_MUSIC,
+	                // Request transient focus.
+	                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+ 		}
 
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !this.careAboutMusic) {
  		//recorder.startRecording();
  		audioTrack.play();
 
@@ -304,13 +310,12 @@ public class MainActivity extends Activity {
  				audioTrack.stop();
  				audioTrack.flush();
  		//	}
-
  	//	});
- 	            // Abandon audio focus when playback complete
- 	            this.mAudioManager.abandonAudioFocus(afChangeListener);
-        }
-
  		//loopbackThread.start();
+        }
+        
+        // Abandon audio focus when playback complete
+        this.mAudioManager.abandonAudioFocus(afChangeListener);
  	}
     /**
      * This sets up a buffer and instantiates a recorder that we will use to detect sound
@@ -340,39 +345,36 @@ public class MainActivity extends Activity {
             }
         };
 
-        //play sound on init for testing
-//        playSound();
-
     }
 
-    //Play the loud sound
-    //Should we do all of this in a new thread?
-    private void playSound() {
-        // Request audio focus for playback
-        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
-                // Use the music stream.
-                AudioManager.STREAM_MUSIC,
-                // Request transient focus.
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-
-        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-
-            //Mute music stream
-            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-
-            // Start playback
-            //Replace this sound with the microphone audio
-           MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
-           mediaPlayer.start();
-            //Log.d(TAG,"Got audio focus");
-
-            //Pause for some seconds.
-
-            // Abandon audio focus when playback complete
-            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-            this.mAudioManager.abandonAudioFocus(afChangeListener);
-        }
-    }
+//    //Play the loud sound
+//    //Should we do all of this in a new thread?
+//    private void playSound() {
+//        // Request audio focus for playback
+//        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
+//                // Use the music stream.
+//                AudioManager.STREAM_MUSIC,
+//                // Request transient focus.
+//                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+//
+//        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+//
+//            //Mute music stream
+//            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
+//
+//            // Start playback
+//            //Replace this sound with the microphone audio
+//           MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
+//           mediaPlayer.start();
+//            //Log.d(TAG,"Got audio focus");
+//
+//            //Pause for some seconds.
+//
+//            // Abandon audio focus when playback complete
+//            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
+//            this.mAudioManager.abandonAudioFocus(afChangeListener);
+//        }
+//    }
 
     private void processAudioData() {
         while (this.running) {
