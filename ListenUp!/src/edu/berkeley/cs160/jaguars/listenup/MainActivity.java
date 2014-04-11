@@ -58,6 +58,8 @@ public class MainActivity extends Activity {
     private boolean careAboutCall = true;
     private TextToSpeech ttobj;
     private String phoneInfo;
+    private boolean shouldDestroyOnBack;
+    private long shouldDestroyOnBackTime;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -107,8 +109,6 @@ public class MainActivity extends Activity {
        
         super.onPause();
     }
-    
-    
 
     @Override
     protected void onStop() {
@@ -125,7 +125,15 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         Log.d(TAG, "Back pressed...");
-        Toast.makeText(getApplicationContext(), "Please press home instead", Toast.LENGTH_SHORT).show();
+        if (this.shouldDestroyOnBack) {
+            if (System.currentTimeMillis() - this.shouldDestroyOnBackTime < 3000) {
+                this.onDestroy();
+            }
+        } else {
+            this.shouldDestroyOnBack = true;
+            this.shouldDestroyOnBackTime = System.currentTimeMillis();
+            Toast.makeText(getApplicationContext(), "Press back again to cancel", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -146,6 +154,9 @@ public class MainActivity extends Activity {
     protected void onDestroy(){
         Log.d(TAG, "destroying...");
     	if(this.recorder != null) {
+            if (this.mIsRecording) {
+                this.recorder.stop();
+            }
     		this.recorder.release();
     		this.recorder = null;
     	}
