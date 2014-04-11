@@ -29,7 +29,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -49,8 +48,8 @@ public class MainActivity extends Activity {
 	private AudioTrack audioTrack;
 	private OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
-    private int CUTOFF = 30000;
     public int timer = 5;
+    private boolean timeToUpdateMaxAmpBar = false;
     public boolean careAboutMusic = true;
     public boolean careAboutLoud = true;
     public boolean careAboutCall = true;
@@ -86,43 +85,47 @@ public class MainActivity extends Activity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_settings:
-                View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
-                boolean loudness = this.careAboutLoud;
-                boolean phone = this.careAboutCall;
-                boolean music = this.careAboutMusic;
-                int sensitivity = this.sensitivity;
-                final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
-                final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
-                final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
-                final ProgressBar pBar = (ProgressBar) settingsView.findViewById(R.id.sensitivityBar);
-                cBoxLoud.setChecked(loudness);
-                cBoxMusic.setChecked(music);
-                cBoxCall.setChecked(phone);
-                pBar.setProgress(sensitivity);
+                if (this.running) {
+                    Toast.makeText(getApplicationContext(), "Please press stop before changing settings", Toast.LENGTH_SHORT).show();
+                } else {
+                    View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
+                    boolean loudness = this.careAboutLoud;
+                    boolean phone = this.careAboutCall;
+                    boolean music = this.careAboutMusic;
+                    int sensitivity = this.sensitivity;
+                    final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
+                    final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
+                    final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
+                    final SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+                    cBoxLoud.setChecked(loudness);
+                    cBoxMusic.setChecked(music);
+                    cBoxCall.setChecked(phone);
+                    pBar.setProgress(sensitivity);
 
-                final AlertDialog settingsDialog = new AlertDialog.Builder(this)
-                        .setTitle(R.string.action_settings)
-                        .setView(settingsView)
-                        .setPositiveButton(R.string.confirm,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-                                        MainActivity.this.careAboutLoud = cBoxLoud.isChecked();
-                                        MainActivity.this.careAboutCall = cBoxCall.isChecked();
-                                        MainActivity.this.careAboutMusic = cBoxMusic.isChecked();
-                                        MainActivity.this.sensitivity = pBar.getProgress();
+                    final AlertDialog settingsDialog = new AlertDialog.Builder(this)
+                            .setTitle(R.string.action_settings)
+                            .setView(settingsView)
+                            .setPositiveButton(R.string.confirm,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                            MainActivity.this.careAboutLoud = cBoxLoud.isChecked();
+                                            MainActivity.this.careAboutCall = cBoxCall.isChecked();
+                                            MainActivity.this.careAboutMusic = cBoxMusic.isChecked();
+                                            MainActivity.this.sensitivity = pBar.getProgress();
+                                        }
                                     }
-                                }
-                        )
-                        .setNegativeButton(R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
+                            )
+                            .setNegativeButton(R.string.cancel,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
                                     }
-                                }
-                        ).create();
+                            ).create();
 
-                settingsDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-                settingsDialog.show();
-                return true;
+                    settingsDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                    settingsDialog.show();
+                    return true;
+                }
             default:
                 return false;
         }
@@ -428,80 +431,38 @@ public class MainActivity extends Activity {
     private void processAudioData() {
         while (this.running) {
             //need to reinitialize recorder because it might be null??
-            if( this.recorder == null) {
+            if (this.recorder == null) {
                 this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
             }
-            this.recorder.read(this.buffer, 0, this.bufferSize);
-            Arrays.sort(this.buffer);
-            final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize -1]);
-            this.runOnUiThread(new Runnable() {
-                public void run() {
-                    ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
-                    maxAmpBar.setProgress(maxAmp);
-                }
-            });
-            if (maxAmp > this.CUTOFF) {
-                Log.d(TAG, "Loud sound detected. CUTOFF value= " + this.CUTOFF);
-                loopbackAudio();
-                //playSound();
+            if (this.timeToUpdateMaxAmpBar) {
+                this.timeToUpdateMaxAmpBar = false;
+                this.recorder.read(this.buffer, 0, this.bufferSize);
+                Arrays.sort(this.buffer);
+                final int maxAmp = Math.max(this.buffer[0], this.buffer[this.bufferSize - 1]);
+                this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
+                        maxAmpBar.setProgress(maxAmp);
+                    }
+                });
+                int CUTOFF = (int) (this.sensitivity / 100.0 * 50000.0);
+                if (maxAmp > CUTOFF) {
+                    Log.d(TAG, "Loud sound detected. sensitivity value= " + this.sensitivity);
+                    Log.d(TAG, "Loud sound detected. CUTOFF value= " + CUTOFF);
+                    loopbackAudio();
+                    //playSound();
 
+                }
+                this.buffer = new short[bufferSize];
+            } else {
+                this.timeToUpdateMaxAmpBar = true;
             }
-            this.buffer = new short[bufferSize];
         }
     }
-
-
 
     private void initializeMaxAmpBar(){
         ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
         maxAmpBar.setMax(39999);
     }
 
-    private void initalizeSeekBar(){
-        final SeekBar seek=(SeekBar) findViewById(R.id.sensitivityBar);
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // TODO Auto-generated method stub
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // TODO Auto-generated method stub
-                MainActivity.this.CUTOFF = (int) (progress/100.0) * 50000;
-            }
-        });
-    }
-
-    private void initializeCheckBoxes() {
-        CheckBox cBoxLoud = (CheckBox)findViewById(R.id.checkBoxLoud);
-        CheckBox cboxMusic = (CheckBox)findViewById(R.id.checkBoxMusic);
-        CheckBox cboxCall = (CheckBox)findViewById(R.id.checkBoxCall);
-        cBoxLoud.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                MainActivity.this.careAboutLoud = isChecked;
-            }
-        });
-
-        cboxMusic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                MainActivity.this.careAboutMusic = isChecked;
-            }
-        });
-
-        cboxCall.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
-                MainActivity.this.careAboutCall = isChecked;
-            }
-        });
-    }
 }
