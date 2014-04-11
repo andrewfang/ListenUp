@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
     private boolean timeToUpdateMaxAmpBar = false;
     public boolean careAboutMusic = true;
     public boolean careAboutLoud = true;
-    public boolean careAboutCall = true;
+    public static boolean careAboutCall = true;
     public int sensitivity = 60;
     private TextToSpeech ttobj;
     private String phoneInfo;
@@ -86,11 +86,12 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 if (this.running) {
+                    assert(getApplicationContext() != null);
                     Toast.makeText(getApplicationContext(), "Please press stop before changing settings", Toast.LENGTH_SHORT).show();
                 } else {
                     View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
                     boolean loudness = this.careAboutLoud;
-                    boolean phone = this.careAboutCall;
+                    boolean phone = careAboutCall;
                     boolean music = this.careAboutMusic;
                     int sensitivity = this.sensitivity;
                     final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
@@ -109,7 +110,7 @@ public class MainActivity extends Activity {
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {
                                             MainActivity.this.careAboutLoud = cBoxLoud.isChecked();
-                                            MainActivity.this.careAboutCall = cBoxCall.isChecked();
+                                            MainActivity.careAboutCall = cBoxCall.isChecked();
                                             MainActivity.this.careAboutMusic = cBoxMusic.isChecked();
                                             MainActivity.this.sensitivity = pBar.getProgress();
                                         }
@@ -170,6 +171,7 @@ public class MainActivity extends Activity {
         } else {
             this.shouldDestroyOnBack = true;
             this.shouldDestroyOnBackTime = System.currentTimeMillis();
+            assert(getApplicationContext() != null);
             Toast.makeText(getApplicationContext(), "Press back again to exit", Toast.LENGTH_SHORT).show();
         }
     }
