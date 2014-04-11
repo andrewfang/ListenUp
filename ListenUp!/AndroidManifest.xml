@@ -36,11 +36,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter> 
         </activity>
-          <activity
-              android:name="edu.berkeley.cs160.jaguars.listenup.Settings"
-              android:parentActivityName=".MainActivity"
-              android:label="Back to home">
-        </activity>
         <activity
               android:name="edu.berkeley.cs160.jaguars.listenup.TextToSpeechConverter"
               android:launchMode="singleInstance"

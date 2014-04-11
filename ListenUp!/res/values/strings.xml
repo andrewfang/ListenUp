@@ -10,5 +10,7 @@
     <string name="callFrom">Call From</string>
     <string name="contactName">Contact Name</string>
     <string name="phoneNumber">Phone Number</string>
+    <string name="confirm">Okay</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

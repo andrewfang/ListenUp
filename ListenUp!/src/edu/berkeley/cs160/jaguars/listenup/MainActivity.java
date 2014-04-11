@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -19,9 +20,6 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
-import android.media.AudioRecord;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.NotificationCompat;
@@ -29,6 +27,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
@@ -52,10 +51,10 @@ public class MainActivity extends Activity {
     private NotificationManager mNotificationManager;
     private int CUTOFF = 30000;
     public int timer = 5;
-    private boolean timeToUpdateMaxAmpBar;
-    private boolean careAboutMusic = true;
-    private boolean careAboutLoud = true;
-    private boolean careAboutCall = true;
+    public boolean careAboutMusic = true;
+    public boolean careAboutLoud = true;
+    public boolean careAboutCall = true;
+    public int sensitivity = 60;
     private TextToSpeech ttobj;
     private String phoneInfo;
     private boolean shouldDestroyOnBack;
@@ -70,8 +69,7 @@ public class MainActivity extends Activity {
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
-        //this.initalizeSeekBar();
-        
+//        this.initializeCheckBoxes();
         mIsRecording = false;
 	}
 
@@ -85,24 +83,59 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	    case R.id.action_settings:
-	    	  Intent goToCanvas = new Intent(MainActivity.this, Settings.class);
-	    	  startActivity(goToCanvas);
-	        return true;
-	    default:
-//	        return super.onOptionsItemSelected(item);
-            return false;
-	    }
-	}
-	
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
+                boolean loudness = this.careAboutLoud;
+                boolean phone = this.careAboutCall;
+                boolean music = this.careAboutMusic;
+                int sensitivity = this.sensitivity;
+                final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
+                final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
+                final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
+                final ProgressBar pBar = (ProgressBar) settingsView.findViewById(R.id.sensitivityBar);
+                cBoxLoud.setChecked(loudness);
+                cBoxMusic.setChecked(music);
+                cBoxCall.setChecked(phone);
+                pBar.setProgress(sensitivity);
+
+                final AlertDialog settingsDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.action_settings)
+                        .setView(settingsView)
+                        .setPositiveButton(R.string.confirm,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        MainActivity.this.careAboutLoud = cBoxLoud.isChecked();
+                                        MainActivity.this.careAboutCall = cBoxCall.isChecked();
+                                        MainActivity.this.careAboutMusic = cBoxMusic.isChecked();
+                                        MainActivity.this.sensitivity = pBar.getProgress();
+                                    }
+                                }
+                        )
+                        .setNegativeButton(R.string.cancel,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                    }
+                                }
+                        ).create();
+
+                settingsDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                settingsDialog.show();
+                return true;
+            default:
+                return false;
+        }
+    }
+
     @Override
     protected void onPause() {
         if (this.running) {
             this.startNotification();
         } else {
-            this.recorder.release();
+            if (this.recorder != null) {
+                this.recorder.release();
+            }
             this.recorder = null;
         }
         Log.d(TAG,"pausing...");
@@ -127,6 +160,7 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Back pressed...");
         if (this.shouldDestroyOnBack) {
             if (System.currentTimeMillis() - this.shouldDestroyOnBackTime < 3000) {
+                this.finish();
                 this.onStop();
                 this.onDestroy();
             }
@@ -252,6 +286,9 @@ public class MainActivity extends Activity {
             this.running = true;
             //I'm going to wrap the entire recording/listening thing in this careAboutLoud boolean. May need to move it
             if (this.careAboutLoud) {
+                if (this.recorder == null) {
+                    this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+                }
                 this.recorder.startRecording();
                 Thread recordingThread = new Thread(new Runnable() {
                     @Override
@@ -421,7 +458,7 @@ public class MainActivity extends Activity {
     }
 
     private void initalizeSeekBar(){
-        final SeekBar seek=(SeekBar) findViewById(R.id.seekBar1);
+        final SeekBar seek=(SeekBar) findViewById(R.id.sensitivityBar);
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -442,7 +479,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void initalizeCheckboxes() {
+    private void initializeCheckBoxes() {
         CheckBox cBoxLoud = (CheckBox)findViewById(R.id.checkBoxLoud);
         CheckBox cboxMusic = (CheckBox)findViewById(R.id.checkBoxMusic);
         CheckBox cboxCall = (CheckBox)findViewById(R.id.checkBoxCall);
