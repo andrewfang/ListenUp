@@ -127,12 +127,13 @@ public class MainActivity extends Activity {
         Log.d(TAG, "Back pressed...");
         if (this.shouldDestroyOnBack) {
             if (System.currentTimeMillis() - this.shouldDestroyOnBackTime < 3000) {
+                this.onStop();
                 this.onDestroy();
             }
         } else {
             this.shouldDestroyOnBack = true;
             this.shouldDestroyOnBackTime = System.currentTimeMillis();
-            Toast.makeText(getApplicationContext(), "Press back again to cancel", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Press back again to exit", Toast.LENGTH_SHORT).show();
         }
     }
 
