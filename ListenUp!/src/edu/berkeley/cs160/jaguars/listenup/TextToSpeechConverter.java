@@ -21,19 +21,22 @@ public class TextToSpeechConverter extends Activity{
     private TextToSpeech ttobj;
     private TextView callFrom, contactName, phoneNumber;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.call_activity);
         contactName = (TextView) findViewById(R.id.tvContactName);
-        phoneNumber = (TextView) findViewById(R.id.tvPhoneNumber);
+        phoneNumber = (TextView) findViewById(R.id.tvPhoneNo);
 
 
         callName = getIntent().getStringExtra("contactName");
         callNo = getIntent().getStringExtra("phoneNr");
-
+        if (callName == null){
+            callName = "Unknown Caller";
+        }
         contactName.setText(callName);
+
         phoneNumber.setText(callNo);
 
         ttobj=new TextToSpeech(getApplicationContext(),
@@ -51,7 +54,7 @@ public class TextToSpeechConverter extends Activity{
                                 installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
                                 startActivity(installIntent);
                             } else {
-                                this.speakText(callName);
+                                this.speakText(callName, callNo);
                             }
                         } else {
                             Log.e("TTS", "Initilization Failed!");
@@ -61,9 +64,11 @@ public class TextToSpeechConverter extends Activity{
 
                     }
 
-                    private void speakText(String callInfo) {
+                    private void speakText(String callInfo, String callNo) {
                         // TODO Auto-generated method stub
-
+                        if (callInfo == "Unknown Caller"){
+                            callInfo = callNo;
+                        }
                         ttobj.speak(callInfo, TextToSpeech.QUEUE_FLUSH, null);
                     }
                 });
@@ -83,6 +88,11 @@ public class TextToSpeechConverter extends Activity{
         }
         super.onPause();
     }
+
+
+
+
+
 
     public void onDestroy() {
         // Don't forget to shutdown!
@@ -120,5 +130,7 @@ public class TextToSpeechConverter extends Activity{
 
         }
     }
+
+
 
 }
