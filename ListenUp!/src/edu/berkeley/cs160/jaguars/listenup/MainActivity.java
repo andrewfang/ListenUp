@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -42,7 +43,8 @@ public class MainActivity extends Activity {
     private int bufferSize;
     private short[] buffer;
     private AudioRecord recorder;
-    private boolean running, mIsRecording;
+    public static boolean running;
+    private boolean mIsRecording;
     private AudioEvent audioEvent;
 	private AudioManager mAudioManager;
 	private AudioTrack audioTrack;
@@ -54,7 +56,7 @@ public class MainActivity extends Activity {
     public boolean careAboutLoud = true;
     public static boolean careAboutCall = true;
     public int sensitivity = 60;
-    private TextToSpeech ttobj;
+    public static TextToSpeech ttobj;
     private String phoneInfo;
     private boolean shouldDestroyOnBack;
     private long shouldDestroyOnBackTime;
@@ -68,6 +70,7 @@ public class MainActivity extends Activity {
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
+        this.initializeTTS();
 //        this.initializeCheckBoxes();
         mIsRecording = false;
 	}
@@ -139,8 +142,13 @@ public class MainActivity extends Activity {
         } else {
             if (this.recorder != null) {
                 this.recorder.release();
+                this.recorder = null;
             }
-            this.recorder = null;
+
+            if (ttobj != null) {
+                ttobj.stop();
+                ttobj.shutdown();
+            }
         }
         Log.d(TAG,"pausing...");
        
@@ -151,9 +159,15 @@ public class MainActivity extends Activity {
     protected void onStop() {
         if (this.running) {
             this.startNotification();
-        } else if (this.recorder != null) {
-            this.recorder.release();
-            this.recorder = null;
+        } else {
+        	if (this.recorder != null) {
+	            this.recorder.release();
+	            this.recorder = null;
+        	}
+            if (ttobj != null) {
+                ttobj.stop();
+                ttobj.shutdown();
+            }
         }
         Log.d(TAG,"stopping...");
         super.onStop();
@@ -182,12 +196,13 @@ public class MainActivity extends Activity {
         if (this.recorder == null) {
             this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
         }
-        if(this.running) {
-        	Log.d(TAG, "Running is true");
+        if(ttobj == null) {
+        	this.initializeTTS();
         }
         if (this.mNotificationManager != null) {
             this.mNotificationManager.cancelAll();
         }
+        
     }
 
     @Override
@@ -202,6 +217,13 @@ public class MainActivity extends Activity {
     	}
         if (this.mNotificationManager != null) {
             this.mNotificationManager.cancelAll();
+        }
+        //turn off recording and call monitoring
+        running = false;
+        this.mIsRecording = false;
+        if (ttobj != null) {
+            ttobj.stop();
+            ttobj.shutdown();
         }
         super.onDestroy();
     }
@@ -465,6 +487,40 @@ public class MainActivity extends Activity {
     private void initializeMaxAmpBar(){
         ProgressBar maxAmpBar = (ProgressBar) findViewById(R.id.maxAmpBar);
         maxAmpBar.setMax(39999);
+    }
+    
+    private void initializeTTS(){
+        ttobj=new TextToSpeech(getApplicationContext(),
+                new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int status) {
+
+                        if (status == TextToSpeech.SUCCESS) {
+                            int result = ttobj.setLanguage(Locale.US);
+                            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                                Log.e("TTS", "This Language is not supported");
+                                Toast.makeText(getApplicationContext(), "This Language is not supported",
+                                        Toast.LENGTH_SHORT).show();
+                                Intent installIntent = new Intent();
+                                installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                                startActivity(installIntent);
+                            }
+                        } else {
+                            Log.e("TTS", "Initilization Failed!");
+                            Toast.makeText(getApplicationContext(), "Initilization Failed!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+//                    public void speakText(String callInfo, String callNo) {
+//                        // TODO Auto-generated method stub
+//                        if (callInfo == "Unknown Caller"){
+//                            callInfo = callNo;
+//                        }
+//                        ttobj.speak(callInfo, TextToSpeech.QUEUE_FLUSH, null);
+//                    }
+                });
     }
 
 }

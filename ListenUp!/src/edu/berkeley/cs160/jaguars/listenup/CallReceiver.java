@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
+import android.speech.tts.TextToSpeech;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -19,7 +20,7 @@ public class CallReceiver extends BroadcastReceiver{
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
-        if (MainActivity.careAboutCall) {
+        if (MainActivity.careAboutCall && MainActivity.running) {
             TelephonyManager tm = (TelephonyManager)context.getSystemService(Service.TELEPHONY_SERVICE);
 
             switch (tm.getCallState()) {
@@ -27,6 +28,9 @@ public class CallReceiver extends BroadcastReceiver{
                 case TelephonyManager.CALL_STATE_RINGING:
 
                     String phoneNr= intent.getStringExtra("incoming_number");
+                    
+                    //Set default to "unknown number"
+                    contactName = "Unknown Number";
 
                     ContentResolver localContentResolver = context.getContentResolver();
                     Cursor contactLookupCursor =
@@ -40,24 +44,26 @@ public class CallReceiver extends BroadcastReceiver{
                     try {
                         while(contactLookupCursor.moveToNext()){
                             contactName = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME));
-                            contactId = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(PhoneLookup._ID));
+                            //contactId = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(PhoneLookup._ID));
                             Log.d("nameTag", "contactMatch name: " + contactName);
-                            Log.d("numTag", "contactMatch id: " + contactId);
+                            //Log.d("numTag", "contactMatch id: " + contactId);
                         }
                     } finally {
                         contactLookupCursor.close();
                     }
 
-                    Intent intentMain  = new Intent(context,
-                            TextToSpeechConverter.class);
-                    Log.d("Phone number", phoneNr);
-                    intentMain.putExtra("contactName", contactName);  //<<< put sms text
-                    intentMain.putExtra("phoneNr", phoneNr);  //<<< put sms text
-
-                    Toast.makeText(context, "Contact Name : " + contactName + " Phone Number: " + phoneNr,Toast.LENGTH_LONG).show();
-                    intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                    context.startActivity(intentMain);
+//                    Intent intentMain  = new Intent(context,
+//                            TextToSpeechConverter.class);
+//                    Log.d("Phone number", phoneNr);
+//                    intentMain.putExtra("contactName", contactName);  //<<< put sms text
+//                    intentMain.putExtra("phoneNr", phoneNr);  //<<< put sms text
+//
+//                    Toast.makeText(context, "Contact Name : " + contactName + " Phone Number: " + phoneNr,Toast.LENGTH_LONG).show();
+//                    intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//
+//                    context.startActivity(intentMain);
+                    
+                    MainActivity.ttobj.speak("Call from" + contactName, TextToSpeech.QUEUE_FLUSH, null);
 
                     break;
             }
