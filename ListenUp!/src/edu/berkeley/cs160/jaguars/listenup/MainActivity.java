@@ -24,6 +24,7 @@ import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.NotificationCompat;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +33,7 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import be.hogent.tarsos.dsp.AudioEvent;
@@ -87,6 +89,33 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+        	case R.id.action_help:
+        		 AlertDialog dialog = new AlertDialog.Builder(this)
+    	         .setMessage(Html.fromHtml("<font color='#359CFC'>" + 
+        		 "<font size='11'><b><i>Welcome to ListenUp! </i><br></font></b>"+
+        		 "Listen Up allows you to be aware of the surrounding loud noise, listen to music, and know incoming caller information while keeping you safe while biking ! <br>" +
+        		 "<br>  <font size='11'><b> Home Page:" +"</b><br></font>"+
+        		 "1) To begin the app using the default settings, simply click Start." +"<br>"+
+        		 "2) Run the application in the background by tapping on the menu bar." +"<br>"+
+        		 "3) To adjust the settings for each task, click on the settings icon in the top menu bar. " +"<br>"+
+        		 "<br><b><font size='11'> Settings Page:" +"</font><br></b>"+
+        		 "<b><i>* Loud Noise or Voice option</i> </b> : plays back loud sounds to keep you aware of surrounding loud noises and listen to people at a distance." +"<br>"+
+        		 "<b><i>* Caller Id</i></b> : allows you to listen to incoming caller information to help decide whether to answer incoming calls." +"<br>"+
+        		 "<b><i>* Pause Music option</i> </b> : pauses music to alert you about surrounding loud noises, such as honks and sirens. " +"<br>"+
+        		 "<b><i>* Sensitivity option </i></b> : detects loud noise according to chosen sound amplification level. <br>"
+        		 ))
+    	         .setTitle("Help")
+    	         .setCancelable(true)
+    	         .setNeutralButton(R.string.confirm,
+    	            new DialogInterface.OnClickListener() {
+    	            public void onClick(DialogInterface dialog, int whichButton){}
+    	            })
+    	         .show();
+    	    	TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+    	    	
+    	    	 textView.setTextSize(12);
+    	    	 
+    	    	 return true;
             case R.id.action_settings:
                 if (this.running) {
                     assert(getApplicationContext() != null);
