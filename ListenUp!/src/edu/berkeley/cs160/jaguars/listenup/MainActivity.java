@@ -272,7 +272,7 @@ public class MainActivity extends Activity {
      */
     public void runInBackground(View view) {
         if (this.running) {
-            Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_LONG).show();
 
             ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(getApplicationContext().ACTIVITY_SERVICE);
             List<RunningTaskInfo> runningTaskInfoList = am.getRunningTasks(10);
@@ -311,6 +311,7 @@ public class MainActivity extends Activity {
         if (isChecked) {
         	
             this.running = true;
+            Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_SHORT).show();
             //I'm going to wrap the entire recording/listening thing in this careAboutLoud boolean. May need to move it
             if (this.careAboutLoud) {
                 if (this.recorder == null) {
@@ -368,8 +369,23 @@ public class MainActivity extends Activity {
  		}
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !this.careAboutMusic) {
- 		//recorder.startRecording();
- 		audioTrack.play();
+        	
+        	//set the stream volume - should we always do this?
+        	int musicVolume = this.mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        	int maxVolume = this.mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        	Log.d(TAG, String.valueOf(musicVolume));
+        	Log.d(TAG, String.valueOf(maxVolume));
+        	
+        	if(maxVolume > musicVolume) {
+        		int loudVolume = musicVolume + 3;
+        		if (loudVolume > maxVolume) {
+        			loudVolume = maxVolume;
+        		}
+        		this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, loudVolume, 0);
+        	}
+        	
+	 		//recorder.startRecording();
+	 		audioTrack.play();
 
  		//Thread loopbackThread = new Thread(new Runnable() {
 
@@ -385,6 +401,7 @@ public class MainActivity extends Activity {
  				//recorder.stop();
  				audioTrack.stop();
  				audioTrack.flush();
+ 				this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
  		//	}
  	//	});
  		//loopbackThread.start();
