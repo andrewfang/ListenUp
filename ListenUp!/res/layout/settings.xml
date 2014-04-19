@@ -13,7 +13,7 @@
         android:id="@+id/checkBoxLoud"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="     Loud Noise/ Voice"
+        android:text="     Loud Noise/Voice"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#359CFC" />
 

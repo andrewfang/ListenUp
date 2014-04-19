@@ -91,18 +91,12 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
         	case R.id.action_help:
         		 AlertDialog dialog = new AlertDialog.Builder(this)
-    	         .setMessage(Html.fromHtml("<font color='#359CFC'>" + 
-        		 "<font size='11'><b><i>Welcome to ListenUp! </i><br></font></b>"+
-        		 "Listen Up allows you to be aware of the surrounding loud noise, listen to music, and know incoming caller information while keeping you safe while biking ! <br>" +
-        		 "<br>  <font size='11'><b> Home Page:" +"</b><br></font>"+
-        		 "1) To begin the app using the default settings, simply click Start." +"<br>"+
-        		 "2) Run the application in the background by tapping on the menu bar." +"<br>"+
-        		 "3) To adjust the settings for each task, click on the settings icon in the top menu bar. " +"<br>"+
-        		 "<br><b><font size='11'> Settings Page:" +"</font><br></b>"+
-        		 "<b><i>* Loud Noise or Voice option</i> </b> : plays back loud sounds to keep you aware of surrounding loud noises and listen to people at a distance." +"<br>"+
-        		 "<b><i>* Caller Id</i></b> : allows you to listen to incoming caller information to help decide whether to answer incoming calls." +"<br>"+
-        		 "<b><i>* Pause Music option</i> </b> : pauses music to alert you about surrounding loud noises, such as honks and sirens. " +"<br>"+
-        		 "<b><i>* Sensitivity option </i></b> : detects loud noise according to chosen sound amplification level. <br>"
+    	         .setMessage(Html.fromHtml("<font color='#359CFC'>" +
+        		 "Listen Up notifies you of loud noises so you can safely listen to music while biking! <br>" +
+        		 "<br><b> Settings:" +"</b><br><br>"+
+        		 "<b><i>* Loud Noise/Voice</i></b> : loud noises will be replayed" +"<br><br>"+
+        		 "<b><i>* Caller Id</i></b> : announces incoming caller information" +"<br><br>"+
+        		 "<b><i>* Pause Music</i> </b> : pauses music when loud sound detected " +"<br></font>"
         		 ))
     	         .setTitle("Help")
     	         .setCancelable(true)
@@ -215,7 +209,7 @@ public class MainActivity extends Activity {
             this.shouldDestroyOnBack = true;
             this.shouldDestroyOnBackTime = System.currentTimeMillis();
             assert(getApplicationContext() != null);
-            Toast.makeText(getApplicationContext(), "Press back again to exit", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Press back again to quit", Toast.LENGTH_SHORT).show();
         }
     }
 

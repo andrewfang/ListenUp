@@ -8,6 +8,7 @@
     <string name="stop">Stop</string>
     <string name="backgroundRun">Run in Background</string>
     <string name="callFrom">Call From</string>
+    <string name="action_help"> Help</string>
     <string name="contactName">Contact Name</string>
     <string name="phoneNumber">Phone Number</string>
     <string name="confirm">Okay</string>
