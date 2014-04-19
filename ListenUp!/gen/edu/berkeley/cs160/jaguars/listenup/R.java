@@ -33,7 +33,8 @@ public final class R {
         public static final int ic_launcher=0x7f020008;
         public static final int ic_settings=0x7f020009;
         public static final int newhelp=0x7f02000a;
-        public static final int settings_icon=0x7f02000b;
+        public static final int progress_bar_states=0x7f02000b;
+        public static final int settings_icon=0x7f02000c;
     }
     public static final class id {
         public static final int action_help=0x7f09000d;
@@ -42,14 +43,14 @@ public final class R {
         public static final int checkBoxLoud=0x7f090008;
         public static final int checkBoxMusic=0x7f09000a;
         public static final int imageView1=0x7f090000;
-        public static final int maxAmpBar=0x7f090002;
+        public static final int maxAmpBar=0x7f090003;
         public static final int sensitivityBar=0x7f09000b;
-        public static final int startStop=0x7f090003;
-        public static final int textView1=0x7f090007;
+        public static final int startStop=0x7f090004;
+        public static final int textView1=0x7f090002;
         public static final int textView3=0x7f090001;
-        public static final int tvCallFrom=0x7f090004;
-        public static final int tvContactName=0x7f090005;
-        public static final int tvPhoneNo=0x7f090006;
+        public static final int tvCallFrom=0x7f090005;
+        public static final int tvContactName=0x7f090006;
+        public static final int tvPhoneNo=0x7f090007;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
