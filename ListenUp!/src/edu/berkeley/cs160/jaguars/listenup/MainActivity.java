@@ -15,6 +15,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
@@ -54,14 +55,15 @@ public class MainActivity extends Activity {
     private NotificationManager mNotificationManager;
     public int timer = 5;
     private boolean timeToUpdateMaxAmpBar = false;
-    public boolean careAboutMusic = true;
-    public boolean careAboutLoud = true;
+    public static boolean careAboutMusic = true;
+    public static boolean careAboutLoud = true;
     public static boolean careAboutCall = true;
-    public int sensitivity = 60;
+    public static int sensitivity = 60;
     public static TextToSpeech ttobj;
     private String phoneInfo;
     private boolean shouldDestroyOnBack;
     private long shouldDestroyOnBackTime;
+    private Toast toast;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +96,9 @@ public class MainActivity extends Activity {
     	         .setMessage(Html.fromHtml("<font color='#359CFC'>" +
         		 "Listen Up notifies you of loud noises so you can safely listen to music while biking! <br>" +
         		 "<br><b> Settings:" +"</b><br><br>"+
-        		 "<b><i>* Loud Noise/Voice</i></b> : loud noises will be replayed" +"<br><br>"+
-        		 "<b><i>* Caller Id</i></b> : announces incoming caller information" +"<br><br>"+
-        		 "<b><i>* Pause Music</i> </b> : pauses music when loud sound detected " +"<br></font>"
+        		 "<b><i>Loud Noise/Voice</i></b><br> loud noises will be replayed" +"<br><br>"+
+        		 "<b><i>Caller Id</i></b><br> announces incoming caller information" +"<br><br>"+
+        		 "<b><i>Pause Music</i></b><br> pauses music when loud sound detected " +"<br></font>"
         		 ))
     	         .setTitle("Help")
     	         .setCancelable(true)
@@ -105,21 +107,21 @@ public class MainActivity extends Activity {
     	            public void onClick(DialogInterface dialog, int whichButton){}
     	            })
     	         .show();
-    	    	TextView textView = (TextView) dialog.findViewById(android.R.id.message);
-    	    	
-    	    	 textView.setTextSize(12);
+    	    	 TextView textView = (TextView) dialog.findViewById(android.R.id.message);
+    	    	 textView.setTextSize(15);
     	    	 
     	    	 return true;
             case R.id.action_settings:
                 if (this.running) {
                     assert(getApplicationContext() != null);
-                    Toast.makeText(getApplicationContext(), "Please press stop before changing settings", Toast.LENGTH_SHORT).show();
+                    this.toast = Toast.makeText(getApplicationContext(), "Please press stop before changing settings", Toast.LENGTH_SHORT);
+                    this.toast.show();
                 } else {
                     View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
-                    boolean loudness = this.careAboutLoud;
+                    boolean loudness = careAboutLoud;
                     boolean phone = careAboutCall;
-                    boolean music = this.careAboutMusic;
-                    int sensitivity = this.sensitivity;
+                    boolean music = careAboutMusic;
+                    int setSensitivity = sensitivity;
                     final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
                     final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
                     final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
@@ -127,7 +129,7 @@ public class MainActivity extends Activity {
                     cBoxLoud.setChecked(loudness);
                     cBoxMusic.setChecked(music);
                     cBoxCall.setChecked(phone);
-                    pBar.setProgress(sensitivity);
+                    pBar.setProgress(setSensitivity);
 
                     final AlertDialog settingsDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.action_settings)
@@ -135,10 +137,10 @@ public class MainActivity extends Activity {
                             .setPositiveButton(R.string.confirm,
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int whichButton) {
-                                            MainActivity.this.careAboutLoud = cBoxLoud.isChecked();
+                                            MainActivity.careAboutLoud = cBoxLoud.isChecked();
                                             MainActivity.careAboutCall = cBoxCall.isChecked();
-                                            MainActivity.this.careAboutMusic = cBoxMusic.isChecked();
-                                            MainActivity.this.sensitivity = pBar.getProgress();
+                                            MainActivity.careAboutMusic = cBoxMusic.isChecked();
+                                            MainActivity.sensitivity = pBar.getProgress();
                                         }
                                     }
                             )
@@ -204,12 +206,15 @@ public class MainActivity extends Activity {
                 this.finish();
                 this.onStop();
                 this.onDestroy();
+            } else {
+                this.shouldDestroyOnBack = false;
             }
         } else {
             this.shouldDestroyOnBack = true;
             this.shouldDestroyOnBackTime = System.currentTimeMillis();
             assert(getApplicationContext() != null);
-            Toast.makeText(getApplicationContext(), "Press back again to quit", Toast.LENGTH_SHORT).show();
+            this.toast = Toast.makeText(getApplicationContext(), "Press back again to quit", Toast.LENGTH_SHORT);
+            this.toast.show();
         }
     }
 
@@ -256,7 +261,7 @@ public class MainActivity extends Activity {
      */
 	private void startNotification() {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.headphones)
+                .setSmallIcon(R.drawable.ic_launcher)
                 .setAutoCancel(true)
                 .setContentTitle("ListenUp! is running")
                 .setContentText("Click to resume")
@@ -320,8 +325,8 @@ public class MainActivity extends Activity {
             //Put notification icon in taskbar
             startNotification();
         } else {
-            Toast.makeText(getApplicationContext(), "Please press start first",
-                    Toast.LENGTH_SHORT).show();
+            this.toast = Toast.makeText(getApplicationContext(), "Please press start first", Toast.LENGTH_SHORT);
+            this.toast.show();
         }
     }
 
@@ -336,7 +341,7 @@ public class MainActivity extends Activity {
             this.running = true;
             Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_SHORT).show();
             //I'm going to wrap the entire recording/listening thing in this careAboutLoud boolean. May need to move it
-            if (this.careAboutLoud) {
+            if (careAboutLoud) {
                 if (this.recorder == null) {
                     this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
                 }

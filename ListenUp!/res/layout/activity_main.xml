@@ -11,30 +11,25 @@
         android:id="@+id/imageView1"
         android:layout_width="139dp"
         android:layout_height="122dp"
-        android:layout_marginBottom="35dp"
+        android:layout_marginBottom="30dp"
         android:src="@drawable/headphones" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ListenUp!"
+        android:text="@string/app_name"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#359CFC"
         android:textStyle="italic"
         android:typeface="serif" />
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
-
     <ProgressBar
         android:id="@+id/maxAmpBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="200dp"
-        android:layout_height="10dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="30dp"
         android:indeterminateOnly="false"
         android:max="100"
