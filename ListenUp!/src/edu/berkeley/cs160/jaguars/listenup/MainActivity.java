@@ -256,7 +256,7 @@ public class MainActivity extends Activity {
      */
 	private void startNotification() {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_launcher)
+                .setSmallIcon(R.drawable.headphones)
                 .setAutoCancel(true)
                 .setContentTitle("ListenUp! is running")
                 .setContentText("Click to resume")
