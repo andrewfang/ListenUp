@@ -24,16 +24,35 @@
         android:textStyle="italic"
         android:typeface="serif" />
 
-    <ProgressBar
-        android:id="@+id/maxAmpBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="200dp"
-        android:layout_height="15dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="30dp"
-        android:indeterminateOnly="false"
-        android:max="100"
-        android:progressDrawable="@drawable/progress_bar_states" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+        <ProgressBar
+            android:id="@+id/maxAmpBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="15dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            android:indeterminateOnly="false"
+            android:max="100"
+            android:progressDrawable="@drawable/progress_bar_states" />
+        <ProgressBar
+            android:id="@+id/maxAmpBarBack"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
+            android:layout_height="15dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            android:indeterminateOnly="false"
+            android:progress="50"
+            android:max="100"
+            android:alpha=".3"
+            android:progressDrawable="@drawable/progress_bar_states" />
+
+    </RelativeLayout>
+
 
     <ToggleButton
         android:id="@+id/startStop"

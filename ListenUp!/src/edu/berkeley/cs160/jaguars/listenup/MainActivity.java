@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
     public static boolean careAboutCall = true;
-    public static int sensitivity = 60;
+    public static int sensitivity = 50;
     public static TextToSpeech ttobj;
     private String phoneInfo;
     private boolean shouldDestroyOnBack;
@@ -126,6 +126,8 @@ public class MainActivity extends Activity {
                     final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
                     final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
                     final SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+                    View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
+                    final ProgressBar thresholdBar = (ProgressBar) mainView.findViewById(R.id.maxAmpBarBack);
                     cBoxLoud.setChecked(loudness);
                     cBoxMusic.setChecked(music);
                     cBoxCall.setChecked(phone);
@@ -140,7 +142,8 @@ public class MainActivity extends Activity {
                                             MainActivity.careAboutLoud = cBoxLoud.isChecked();
                                             MainActivity.careAboutCall = cBoxCall.isChecked();
                                             MainActivity.careAboutMusic = cBoxMusic.isChecked();
-                                            MainActivity.sensitivity = pBar.getProgress();
+                                            MainActivity.sensitivity = pBar.getMax() - pBar.getProgress();
+                                            thresholdBar.setProgress(MainActivity.sensitivity);
                                         }
                                     }
                             )
@@ -257,7 +260,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Description here TODO
+     * Constructs the task in the notification bar
      */
 	private void startNotification() {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
@@ -559,7 +562,6 @@ public class MainActivity extends Activity {
                     }
 
 //                    public void speakText(String callInfo, String callNo) {
-//                        // TODO Auto-generated method stub
 //                        if (callInfo == "Unknown Caller"){
 //                            callInfo = callNo;
 //                        }
