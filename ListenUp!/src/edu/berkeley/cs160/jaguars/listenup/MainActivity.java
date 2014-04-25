@@ -109,7 +109,7 @@ public class MainActivity extends Activity {
     	         .show();
     	    	 TextView textView = (TextView) dialog.findViewById(android.R.id.message);
     	    	 textView.setTextSize(15);
-    	    	 
+
     	    	 return true;
             case R.id.action_settings:
                 if (this.running) {
@@ -131,7 +131,8 @@ public class MainActivity extends Activity {
                     cBoxLoud.setChecked(loudness);
                     cBoxMusic.setChecked(music);
                     cBoxCall.setChecked(phone);
-                    pBar.setProgress(setSensitivity);
+                    pBar.setProgress(pBar.getMax() - setSensitivity);
+                    thresholdBar.setProgress(thresholdBar.getMax() - setSensitivity);
 
                     final AlertDialog settingsDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.action_settings)
