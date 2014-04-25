@@ -132,7 +132,6 @@ public class MainActivity extends Activity {
                     cBoxMusic.setChecked(music);
                     cBoxCall.setChecked(phone);
                     pBar.setProgress(pBar.getMax() - setSensitivity);
-                    thresholdBar.setProgress(thresholdBar.getMax() - setSensitivity);
 
                     final AlertDialog settingsDialog = new AlertDialog.Builder(this)
                             .setTitle(R.string.action_settings)
@@ -144,7 +143,12 @@ public class MainActivity extends Activity {
                                             MainActivity.careAboutCall = cBoxCall.isChecked();
                                             MainActivity.careAboutMusic = cBoxMusic.isChecked();
                                             MainActivity.sensitivity = pBar.getMax() - pBar.getProgress();
-                                            thresholdBar.setProgress(MainActivity.sensitivity);
+                                            MainActivity.this.runOnUiThread(new Runnable() {
+                                                public void run() {
+                                                    thresholdBar.setProgress(thresholdBar.getMax() - thresholdBar.getProgress());
+                                                }
+                                            });
+
                                         }
                                     }
                             )
