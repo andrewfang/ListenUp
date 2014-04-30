@@ -15,6 +15,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -58,12 +59,17 @@ public class MainActivity extends Activity {
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
     public static boolean careAboutCall = true;
-    public static int sensitivity = 50;
+    public static int sensitivity = 60;
+    public boolean defaultLoudSetting = true;
+    public boolean defaultCallSetting = true;
+    public boolean defaultMusicSetting = true;
+    public int defaultSensitivity = 60;
     public static TextToSpeech ttobj;
-    private String phoneInfo;
     private boolean shouldDestroyOnBack;
     private long shouldDestroyOnBackTime;
     private Toast toast;
+    private SharedPreferences sharedPref;
+    public static String sharedFilename = "ListenUpSharedFile";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +81,23 @@ public class MainActivity extends Activity {
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
         this.initializeTTS();
-//        this.initializeCheckBoxes();
         mIsRecording = false;
+
+        this.sharedPref = getSharedPreferences(sharedFilename,0);
+        careAboutLoud = this.sharedPref.getBoolean("loudBoolean", defaultLoudSetting);
+        careAboutCall = this.sharedPref.getBoolean("callBoolean", defaultCallSetting);
+        careAboutMusic = this.sharedPref.getBoolean("musicBoolean", defaultMusicSetting);
+        sensitivity = this.sharedPref.getInt("sensitivityInt", defaultSensitivity);
+
+        View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
+        CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
+        CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
+        CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
+        SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+        cBoxLoud.setChecked(careAboutLoud);
+        cBoxMusic.setChecked(careAboutCall);
+        cBoxCall.setChecked(careAboutMusic);
+        pBar.setProgress(pBar.getMax() - sensitivity);
 	}
 
 
@@ -127,7 +148,6 @@ public class MainActivity extends Activity {
                     final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
                     final SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
                     View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
-                    final ProgressBar thresholdBar = (ProgressBar) mainView.findViewById(R.id.maxAmpBarBack);
                     cBoxLoud.setChecked(loudness);
                     cBoxMusic.setChecked(music);
                     cBoxCall.setChecked(phone);
@@ -143,12 +163,19 @@ public class MainActivity extends Activity {
                                             MainActivity.careAboutCall = cBoxCall.isChecked();
                                             MainActivity.careAboutMusic = cBoxMusic.isChecked();
                                             MainActivity.sensitivity = pBar.getMax() - pBar.getProgress();
-                                            MainActivity.this.runOnUiThread(new Runnable() {
-                                                public void run() {
-                                                    thresholdBar.setProgress(thresholdBar.getMax() - thresholdBar.getProgress());
-                                                }
-                                            });
+                                            MainActivity.this.updateSensitivityMarker(MainActivity.sensitivity);
 
+                                            MainActivity.this.defaultLoudSetting = careAboutLoud;
+                                            MainActivity.this.defaultCallSetting = careAboutCall;
+                                            MainActivity.this.defaultMusicSetting = careAboutMusic;
+                                            MainActivity.this.defaultSensitivity = sensitivity;
+
+                                            SharedPreferences.Editor editor = MainActivity.this.sharedPref.edit();
+                                            editor.putBoolean("loudBoolean", MainActivity.this.defaultLoudSetting);
+                                            editor.putBoolean("callBoolean", MainActivity.this.defaultCallSetting);
+                                            editor.putBoolean("musicBoolean", MainActivity.this.defaultMusicSetting);
+                                            editor.putInt("sensitivityInt", MainActivity.this.defaultSensitivity);
+                                            editor.commit();
                                         }
                                     }
                             )
@@ -535,6 +562,16 @@ public class MainActivity extends Activity {
                 this.timeToUpdateMaxAmpBar = true;
             }
         }
+    }
+
+    private void updateSensitivityMarker(int value) {
+        final int val = value;
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                ProgressBar thresholdBar = (ProgressBar) findViewById(R.id.maxAmpBarBack);
+                thresholdBar.setProgress(val);
+            }
+        });
     }
 
     private void initializeMaxAmpBar(){
