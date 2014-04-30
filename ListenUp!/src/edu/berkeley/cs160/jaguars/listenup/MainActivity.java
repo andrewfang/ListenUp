@@ -185,6 +185,9 @@ public class MainActivity extends Activity {
                                         }
                                     }
                             ).create();
+
+                    settingsDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+                    settingsDialog.show();
                     return true;
                 }
             default:
