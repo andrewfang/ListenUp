@@ -16,13 +16,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-import android.media.AudioManager;
-import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.NotificationCompat;
@@ -50,9 +49,9 @@ public class MainActivity extends Activity {
     public static boolean running;
     private boolean mIsRecording;
     private AudioEvent audioEvent;
-	private AudioManager mAudioManager;
+	public static AudioManager mAudioManager;
 	private AudioTrack audioTrack;
-	private OnAudioFocusChangeListener afChangeListener;
+	public static OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
     public int timer = 5;
     private boolean timeToUpdateMaxAmpBar = false;
@@ -502,35 +501,6 @@ public class MainActivity extends Activity {
         };
 
     }
-
-//    //Play the loud sound
-//    //Should we do all of this in a new thread?
-//    private void playSound() {
-//        // Request audio focus for playback
-//        int result = this.mAudioManager.requestAudioFocus(afChangeListener,
-//                // Use the music stream.
-//                AudioManager.STREAM_MUSIC,
-//                // Request transient focus.
-//                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-//
-//        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-//
-//            //Mute music stream
-//            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-//
-//            // Start playback
-//            //Replace this sound with the microphone audio
-//           MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.carhonk1);
-//           mediaPlayer.start();
-//            //Log.d(TAG,"Got audio focus");
-//
-//            //Pause for some seconds.
-//
-//            // Abandon audio focus when playback complete
-//            this.mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-//            this.mAudioManager.abandonAudioFocus(afChangeListener);
-//        }
-//    }
 
     private void processAudioData() {
         while (this.running) {

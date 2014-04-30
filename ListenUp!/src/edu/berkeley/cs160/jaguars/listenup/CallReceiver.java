@@ -6,14 +6,12 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.speech.tts.TextToSpeech;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.Toast;
 
 public class CallReceiver extends BroadcastReceiver{
 	public String contactName, contactId;
@@ -44,27 +42,21 @@ public class CallReceiver extends BroadcastReceiver{
                     try {
                         while(contactLookupCursor.moveToNext()){
                             contactName = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(PhoneLookup.DISPLAY_NAME));
-                            //contactId = contactLookupCursor.getString(contactLookupCursor.getColumnIndexOrThrow(PhoneLookup._ID));
-                            Log.d("nameTag", "contactMatch name: " + contactName);
-                            //Log.d("numTag", "contactMatch id: " + contactId);
                         }
                     } finally {
                         contactLookupCursor.close();
                     }
 
-//                    Intent intentMain  = new Intent(context,
-//                            TextToSpeechConverter.class);
-//                    Log.d("Phone number", phoneNr);
-//                    intentMain.putExtra("contactName", contactName);  //<<< put sms text
-//                    intentMain.putExtra("phoneNr", phoneNr);  //<<< put sms text
-//
-//                    Toast.makeText(context, "Contact Name : " + contactName + " Phone Number: " + phoneNr,Toast.LENGTH_LONG).show();
-//                    intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//
-//                    context.startActivity(intentMain);
-                    
-                    MainActivity.ttobj.speak("Call from" + contactName, TextToSpeech.QUEUE_FLUSH, null);
+             		int ringMode = MainActivity.mAudioManager.getRingerMode();
+             		
+             		//Silence the ringtone to pronounce the name
+             		MainActivity.mAudioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
 
+                    MainActivity.ttobj.speak("Call from" + contactName, TextToSpeech.QUEUE_FLUSH, null);
+                    
+                    //Unsilence
+                    MainActivity.mAudioManager.setRingerMode(ringMode);
+              
                     break;
             }
         }
