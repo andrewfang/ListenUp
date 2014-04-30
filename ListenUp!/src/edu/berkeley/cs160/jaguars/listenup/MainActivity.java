@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -37,7 +39,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-import be.hogent.tarsos.dsp.AudioEvent;
 
 public class MainActivity extends Activity {
 
@@ -54,6 +55,7 @@ public class MainActivity extends Activity {
 	public static OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
     public int timer = 20;
+    private int musicVolume;
     private boolean timeToUpdateMaxAmpBar = false;
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
@@ -69,6 +71,10 @@ public class MainActivity extends Activity {
     private Toast toast;
     private SharedPreferences sharedPref;
     public static String sharedFilename = "ListenUpSharedFile";
+    
+	/* Timer stuff */
+	private Timer timeoutTimer = new Timer();
+	private TimerTask timerTask;
 
     
 	@Override
@@ -82,6 +88,8 @@ public class MainActivity extends Activity {
         this.initializeAudioTrack();
         this.initializeTTS();
         mIsRecording = false;
+        
+        //Set up saved settings
         this.sharedPref = getSharedPreferences(sharedFilename,0);
         careAboutLoud = this.sharedPref.getBoolean("loudBoolean", defaultLoudSetting);
         careAboutCall = this.sharedPref.getBoolean("callBoolean", defaultCallSetting);
@@ -357,7 +365,6 @@ public class MainActivity extends Activity {
         	
             this.running = true;
             Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_SHORT).show();
-            //I'm going to wrap the entire recording/listening thing in this careAboutLoud boolean. May need to move it
             if (careAboutLoud) {
                 if (this.recorder == null) {
                     this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
@@ -406,16 +413,15 @@ public class MainActivity extends Activity {
 	                // Use the music stream.
 	                AudioManager.STREAM_MUSIC,
 	                // Request transient focus.
-	                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+	                AudioManager.AUDIOFOCUS_GAIN);
  		}
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !this.careAboutMusic) {
-        	int musicVolume;
         	int maxVolume;
         	int currentAmp;
         	int CUTOFF = (int) (this.sensitivity / 100.0 * 50000.0);
         	
-        	//set the stream volume - should we always do this?
+        	//set the stream volume to higher than current level
         	musicVolume = this.mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         	maxVolume = this.mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         	
@@ -427,10 +433,12 @@ public class MainActivity extends Activity {
         		this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, loudVolume, 0);
         	}
         	
+        	//loop until loud sound is gone
         	while(maxAmp > CUTOFF) {
 	 			audioTrack.play();
  				
 	 			maxAmp = 0;
+	 			//play 20 ticks at a time
  				while (timer > 0) {
  					int bufferReadResult = recorder.read(buffer, 0, buffer.length);
  					audioTrack.write(buffer, 0, bufferReadResult);
@@ -439,18 +447,27 @@ public class MainActivity extends Activity {
  					maxAmp = Math.max(currentAmp, maxAmp);
  				}
  				timer = 20;
- 				Log.d(TAG, "Amplitude: " + String.valueOf(maxAmp));
  				
         	}
-			audioTrack.stop();
-			audioTrack.flush();
- 			
-        	this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
+        	
+        	
+            //Pause for a bit after playback
+        	timeoutTimer = new Timer();
+    		timerTask = new TimerTask() {
+
+    			@Override
+    			public void run() {
+    				audioTrack.stop();
+    				audioTrack.flush();
+    		        // Abandon audio focus when playback complete
+    				mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
+    		        mAudioManager.abandonAudioFocus(afChangeListener);
+    			}	
+    		};		
+    		timeoutTimer.schedule(timerTask, 1000);
  			
         }
         
-        // Abandon audio focus when playback complete
-        this.mAudioManager.abandonAudioFocus(this.afChangeListener);
  	}
     /**
      * This sets up a buffer and instantiates a recorder that we will use to detect sound
@@ -501,8 +518,8 @@ public class MainActivity extends Activity {
                 });
                 int CUTOFF = (int) (this.sensitivity / 100.0 * 50000.0);
                 if (maxAmp > CUTOFF) {
-                    Log.d(TAG, "Loud sound detected. sensitivity value= " + this.sensitivity);
-                    Log.d(TAG, "Loud sound detected. CUTOFF value= " + CUTOFF);
+//                    Log.d(TAG, "Loud sound detected. sensitivity value= " + this.sensitivity);
+//                    Log.d(TAG, "Loud sound detected. CUTOFF value= " + CUTOFF);
                     loopbackAudio(maxAmp);
 
                 }
@@ -537,7 +554,7 @@ public class MainActivity extends Activity {
                         if (status == TextToSpeech.SUCCESS) {
                             int result = ttobj.setLanguage(Locale.US);
                             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                                Log.e("TTS", "This Language is not supported");
+//                                Log.e("TTS", "This Language is not supported");
                                 Toast.makeText(getApplicationContext(), "This Language is not supported",
                                         Toast.LENGTH_SHORT).show();
                                 Intent installIntent = new Intent();
@@ -545,7 +562,7 @@ public class MainActivity extends Activity {
                                 startActivity(installIntent);
                             }
                         } else {
-                            Log.e("TTS", "Initilization Failed!");
+//                            Log.e("TTS", "Initilization Failed!");
                             Toast.makeText(getApplicationContext(), "Initilization Failed!",
                                     Toast.LENGTH_SHORT).show();
                         }
