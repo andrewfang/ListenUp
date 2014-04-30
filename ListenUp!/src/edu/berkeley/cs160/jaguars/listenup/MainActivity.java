@@ -59,26 +59,17 @@ public class MainActivity extends Activity {
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
     public static boolean careAboutCall = true;
-    public static int sensitivity = 50;
+    public static int sensitivity = 60;
+    public boolean defaultLoudSetting = true;
+    public boolean defaultCallSetting = true;
+    public boolean defaultMusicSetting = true;
+    public int defaultSensitivity = 60;
     public static TextToSpeech ttobj;
-    private String phoneInfo;
     private boolean shouldDestroyOnBack;
     private long shouldDestroyOnBackTime;
     private Toast toast;
-    SharedPreferences someData;
-    public static String filename = "sharedString";
-    View settingsView;
-    CheckBox cBoxLoud;
-    CheckBox cBoxMusic;
-    CheckBox cBoxCall;
-    Boolean loudData = false;
-	Boolean callData = false;
-	Boolean musicData = false;
-	int sensitivityData = 0;
-	AlertDialog settingsDialog;
-	ProgressBar thresholdBar;
-	 SeekBar pBar;
-    //final SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+    private SharedPreferences sharedPref;
+    public static String sharedFilename = "ListenUpSharedFile";
 
     
 	@Override
@@ -91,87 +82,22 @@ public class MainActivity extends Activity {
         this.initializeMaxAmpBar();
         this.initializeAudioTrack();
         this.initializeTTS();
-//        this.initializeCheckBoxes();
         mIsRecording = false;
-        
-        settingsView = getLayoutInflater().inflate(R.layout.settings, null);
-        
-       settingsDialog = new AlertDialog.Builder(this)
-        .setTitle(R.string.action_settings)
-        .setView(settingsView)
-        .setPositiveButton(R.string.confirm,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    	
-                    	
-                    	Toast.makeText(getApplicationContext(), "in Dialog On Click!", 
-                                Toast.LENGTH_SHORT).show();
-                    	
-                        loudData = cBoxLoud.isChecked();
-                    	callData = cBoxCall.isChecked();
-                    	musicData = cBoxMusic.isChecked();
-                    	sensitivityData = pBar.getProgress();
-                    	
-    						
-                    	SharedPreferences.Editor editor = someData.edit();
-                    	editor.putBoolean("loudBoolean", loudData);
-                    	editor.putBoolean("callBoolean", callData);
-                    	editor.putBoolean("musicBoolean", musicData);
-                    	editor.putInt("sensitivityInt", sensitivityData);
-                    	
-                    	editor.commit();
-                    	dialog.dismiss();
+        this.sharedPref = getSharedPreferences(sharedFilename,0);
+        careAboutLoud = this.sharedPref.getBoolean("loudBoolean", defaultLoudSetting);
+        careAboutCall = this.sharedPref.getBoolean("callBoolean", defaultCallSetting);
+        careAboutMusic = this.sharedPref.getBoolean("musicBoolean", defaultMusicSetting);
+        sensitivity = this.sharedPref.getInt("sensitivityInt", defaultSensitivity);
 
-                        //MainActivity.careAboutLoud = cBoxLoud.isChecked();
-                       // MainActivity.careAboutCall = cBoxCall.isChecked();
-                       // MainActivity.careAboutMusic = cBoxMusic.isChecked();
-                       // MainActivity.sensitivity = pBar.getMax() - pBar.getProgress();
-                        View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
-
-                        final ProgressBar thresholdBar = (ProgressBar) mainView.findViewById(R.id.maxAmpBarBack);
-
-                       MainActivity.this.runOnUiThread(new Runnable() {
-                            public void run() {
-                                thresholdBar.setProgress(thresholdBar.getMax() - thresholdBar.getProgress());
-                            }
-                        });
-                        
-
-                    }
-                }
-        )
-        .setNegativeButton(R.string.cancel,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                    	dialog.dismiss();
-                    	
-                    }
-                }
-        ).create();
-        
-        cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
-        cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
-        cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
-        pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
-        
-
-        
-        someData = getSharedPreferences(filename, 0);
-        Boolean returnedLoud = someData.getBoolean("loudBoolean", loudData);
-        Boolean returnedCall = someData.getBoolean("callBoolean", callData);
-        Boolean returnedMusic = someData.getBoolean("musicBoolean", musicData);
-        int returnedInt = someData.getInt("sensitivityInt", sensitivityData);
-
-        cBoxLoud.setChecked(returnedLoud);
-        cBoxCall.setChecked(returnedCall);
-        cBoxMusic.setChecked(returnedMusic);
-        pBar.setProgress(returnedInt);
-     
-        
-       
-        
-        
-      
+        View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
+        CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
+        CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
+        CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
+        SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+        cBoxLoud.setChecked(careAboutLoud);
+        cBoxMusic.setChecked(careAboutCall);
+        cBoxCall.setChecked(careAboutMusic);
+        pBar.setProgress(pBar.getMax() - sensitivity);
 	}
 
 
@@ -212,23 +138,53 @@ public class MainActivity extends Activity {
                     this.toast = Toast.makeText(getApplicationContext(), "Please press stop before changing settings", Toast.LENGTH_SHORT);
                     this.toast.show();
                 } else {
-                 
-                  
+                    View settingsView = getLayoutInflater().inflate(R.layout.settings, null);
+                    boolean loudness = careAboutLoud;
+                    boolean phone = careAboutCall;
+                    boolean music = careAboutMusic;
+                    int setSensitivity = sensitivity;
+                    final CheckBox cBoxLoud = (CheckBox) settingsView.findViewById(R.id.checkBoxLoud);
+                    final CheckBox cBoxMusic = (CheckBox) settingsView.findViewById(R.id.checkBoxMusic);
+                    final CheckBox cBoxCall = (CheckBox) settingsView.findViewById(R.id.checkBoxCall);
+                    final SeekBar pBar = (SeekBar) settingsView.findViewById(R.id.sensitivityBar);
+                    View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
+                    cBoxLoud.setChecked(loudness);
+                    cBoxMusic.setChecked(music);
+                    cBoxCall.setChecked(phone);
+                    pBar.setProgress(pBar.getMax() - setSensitivity);
 
-                  //  View mainView = getLayoutInflater().inflate(R.layout.activity_main, null);
-                   // final ProgressBar thresholdBar = (ProgressBar) mainView.findViewById(R.id.maxAmpBarBack);
-                    
-                    
-                    
-                    
-                 //  pBar.setProgress(pBar.getMax() - setSensitivity);
+                    final AlertDialog settingsDialog = new AlertDialog.Builder(this)
+                            .setTitle(R.string.action_settings)
+                            .setView(settingsView)
+                            .setPositiveButton(R.string.confirm,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                            MainActivity.careAboutLoud = cBoxLoud.isChecked();
+                                            MainActivity.careAboutCall = cBoxCall.isChecked();
+                                            MainActivity.careAboutMusic = cBoxMusic.isChecked();
+                                            MainActivity.sensitivity = pBar.getMax() - pBar.getProgress();
+                                            MainActivity.this.updateSensitivityMarker(MainActivity.sensitivity);
 
-                    
+                                            MainActivity.this.defaultLoudSetting = careAboutLoud;
+                                            MainActivity.this.defaultCallSetting = careAboutCall;
+                                            MainActivity.this.defaultMusicSetting = careAboutMusic;
+                                            MainActivity.this.defaultSensitivity = sensitivity;
 
-                    settingsDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-                    settingsDialog.show();
-                    
-               
+                                            SharedPreferences.Editor editor = MainActivity.this.sharedPref.edit();
+                                            editor.putBoolean("loudBoolean", MainActivity.this.defaultLoudSetting);
+                                            editor.putBoolean("callBoolean", MainActivity.this.defaultCallSetting);
+                                            editor.putBoolean("musicBoolean", MainActivity.this.defaultMusicSetting);
+                                            editor.putInt("sensitivityInt", MainActivity.this.defaultSensitivity);
+                                            editor.commit();
+                                        }
+                                    }
+                            )
+                            .setNegativeButton(R.string.cancel,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
+                                    }
+                            ).create();
                     return true;
                 }
             default:
@@ -603,6 +559,16 @@ public class MainActivity extends Activity {
                 this.timeToUpdateMaxAmpBar = true;
             }
         }
+    }
+
+    private void updateSensitivityMarker(int value) {
+        final int val = value;
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                ProgressBar thresholdBar = (ProgressBar) findViewById(R.id.maxAmpBarBack);
+                thresholdBar.setProgress(val);
+            }
+        });
     }
 
     private void initializeMaxAmpBar(){
