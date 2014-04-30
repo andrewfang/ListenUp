@@ -48,12 +48,12 @@ public class MainActivity extends Activity {
     private AudioRecord recorder;
     public static boolean running;
     private boolean mIsRecording;
-    private AudioEvent audioEvent;
+    //private AudioEvent audioEvent;
 	public static AudioManager mAudioManager;
 	private AudioTrack audioTrack;
 	public static OnAudioFocusChangeListener afChangeListener;
     private NotificationManager mNotificationManager;
-    public int timer = 5;
+    public int timer = 20;
     private boolean timeToUpdateMaxAmpBar = false;
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
@@ -302,27 +302,12 @@ public class MainActivity extends Activity {
                 .setOngoing(true);
 		// Creates an explicit intent for an Activity in your app
 		Intent resultIntent = new Intent(this, MainActivity.class);
-		//resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
 		// mNotifyId allows you to update the notification later on.
         int mNotifyId = 1;
 
 		PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, mNotifyId);
-//		// The stack builder object will contain an artificial back stack for the
-//		// started Activity.
-//		// This ensures that navigating backward from the Activity leads out of
-//		// your application to the Home screen.
-//		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-//		// Adds the back stack for the Intent (but not the Intent itself)
-//		stackBuilder.addParentStack(MainActivity.class);
-//		// Adds the Intent that starts the Activity to the top of the stack
-//		stackBuilder.addNextIntent(resultIntent);
-//		PendingIntent resultPendingIntent =
-//		        stackBuilder.getPendingIntent(
-//		            0,
-//		            PendingIntent.FLAG_UPDATE_CURRENT
-//		        );
-//
-//
+
 		mBuilder.setContentIntent(resultPendingIntent);
         this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -334,8 +319,6 @@ public class MainActivity extends Activity {
      */
     public void runInBackground(View view) {
         if (this.running) {
-//            Toast.makeText(getApplicationContext(), "Listening in background", Toast.LENGTH_LONG).show();
-
             ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(getApplicationContext().ACTIVITY_SERVICE);
             List<RunningTaskInfo> runningTaskInfoList = am.getRunningTasks(10);
             List<String> backStack = new ArrayList<String>();
@@ -388,9 +371,6 @@ public class MainActivity extends Activity {
                             mIsRecording = false;
                         } else {
                             mIsRecording = true;
-                            // STEP 4: start recording
-                            //loopbackAudio();
-                            // END STEP 4
                         }
                     }
                 });
@@ -399,7 +379,6 @@ public class MainActivity extends Activity {
 
         } else {
             this.running = false;
-//                    MainActivity.this.recorder.stop();
         }
     }
     
@@ -416,7 +395,7 @@ public class MainActivity extends Activity {
     }
     
  // STEP 3: while the audio is recording, play back the audio
- 	public void loopbackAudio() {
+ 	public void loopbackAudio(int maxAmp) {
  		
  		int result = 0;
  		
@@ -431,14 +410,16 @@ public class MainActivity extends Activity {
  		}
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !this.careAboutMusic) {
+        	int musicVolume;
+        	int maxVolume;
+        	int currentAmp;
+        	int CUTOFF = (int) (this.sensitivity / 100.0 * 50000.0);
         	
         	//set the stream volume - should we always do this?
-        	int musicVolume = this.mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        	int maxVolume = this.mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        	Log.d(TAG, String.valueOf(musicVolume));
-        	Log.d(TAG, String.valueOf(maxVolume));
+        	musicVolume = this.mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        	maxVolume = this.mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         	
-        	if(maxVolume > musicVolume) {
+        	if(this.careAboutMusic && maxVolume > musicVolume) {
         		int loudVolume = musicVolume + 3;
         		if (loudVolume > maxVolume) {
         			loudVolume = maxVolume;
@@ -446,31 +427,30 @@ public class MainActivity extends Activity {
         		this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, loudVolume, 0);
         	}
         	
-	 		//recorder.startRecording();
-	 		audioTrack.play();
-
- 		//Thread loopbackThread = new Thread(new Runnable() {
-
- 			//@Override
- 			//public void run() {
+        	while(maxAmp > CUTOFF) {
+	 			audioTrack.play();
  				
+	 			maxAmp = 0;
  				while (timer > 0) {
  					int bufferReadResult = recorder.read(buffer, 0, buffer.length);
  					audioTrack.write(buffer, 0, bufferReadResult);
  					timer = timer - 1;
+ 					currentAmp = Math.abs(buffer[0]);
+ 					maxAmp = Math.max(currentAmp, maxAmp);
  				}
- 				timer = 5;
- 				//recorder.stop();
- 				audioTrack.stop();
- 				audioTrack.flush();
- 				this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
- 		//	}
- 	//	});
- 		//loopbackThread.start();
+ 				timer = 20;
+ 				Log.d(TAG, "Amplitude: " + String.valueOf(maxAmp));
+ 				
+        	}
+			audioTrack.stop();
+			audioTrack.flush();
+ 			
+        	this.mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, musicVolume, 0);
+ 			
         }
         
         // Abandon audio focus when playback complete
-        this.mAudioManager.abandonAudioFocus(afChangeListener);
+        this.mAudioManager.abandonAudioFocus(this.afChangeListener);
  	}
     /**
      * This sets up a buffer and instantiates a recorder that we will use to detect sound
@@ -480,7 +460,7 @@ public class MainActivity extends Activity {
         this.buffer = new short[bufferSize];
         this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
         be.hogent.tarsos.dsp.AudioFormat format = new be.hogent.tarsos.dsp.AudioFormat(SAMPLE_RATE, 16, 1, true, true);
-        this.audioEvent = new AudioEvent(format, this.buffer.length);
+        //this.audioEvent = new AudioEvent(format, this.buffer.length);
     }
 
     private void initializeAudioManager() {
@@ -504,7 +484,7 @@ public class MainActivity extends Activity {
 
     private void processAudioData() {
         while (this.running) {
-            //need to reinitialize recorder because it might be null??
+            //need to reinitialize recorder because it might be null
             if (this.recorder == null) {
                 this.recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
             }
@@ -523,8 +503,7 @@ public class MainActivity extends Activity {
                 if (maxAmp > CUTOFF) {
                     Log.d(TAG, "Loud sound detected. sensitivity value= " + this.sensitivity);
                     Log.d(TAG, "Loud sound detected. CUTOFF value= " + CUTOFF);
-                    loopbackAudio();
-                    //playSound();
+                    loopbackAudio(maxAmp);
 
                 }
                 this.buffer = new short[bufferSize];
@@ -572,13 +551,6 @@ public class MainActivity extends Activity {
                         }
 
                     }
-
-//                    public void speakText(String callInfo, String callNo) {
-//                        if (callInfo == "Unknown Caller"){
-//                            callInfo = callNo;
-//                        }
-//                        ttobj.speak(callInfo, TextToSpeech.QUEUE_FLUSH, null);
-//                    }
                 });
     }
 
