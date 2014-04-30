@@ -1,5 +1,8 @@
 package edu.berkeley.cs160.jaguars.listenup;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -15,6 +18,12 @@ import android.util.Log;
 
 public class CallReceiver extends BroadcastReceiver{
 	public String contactName, contactId;
+	private int ringMode;
+	
+	/* Timer stuff */
+	private Timer timer = new Timer();
+	private TimerTask timerTask;
+	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
@@ -47,16 +56,40 @@ public class CallReceiver extends BroadcastReceiver{
                         contactLookupCursor.close();
                     }
 
-             		int ringMode = MainActivity.mAudioManager.getRingerMode();
+                    int result = 0;
+             		ringMode = MainActivity.mAudioManager.getRingerMode();
              		
              		//Silence the ringtone to pronounce the name
              		MainActivity.mAudioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
 
-                    MainActivity.ttobj.speak("Call from" + contactName, TextToSpeech.QUEUE_FLUSH, null);
+             		// Check if we are supposed to pause music
+             		if(MainActivity.careAboutMusic) {
+            	        // Request audio focus for playback
+            	        result = MainActivity.mAudioManager.requestAudioFocus(MainActivity.afChangeListener,
+            	                // Use the music stream.
+            	                AudioManager.STREAM_MUSIC,
+            	                // Request transient focus.
+            	                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+             		}
+
+                    if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !MainActivity.careAboutMusic) {
+             		
+                    	MainActivity.ttobj.speak("Call from" + contactName, TextToSpeech.QUEUE_FLUSH, null);
+                    }
                     
-                    //Unsilence
-                    MainActivity.mAudioManager.setRingerMode(ringMode);
-              
+                    //Pause for 4-5 secs to pronounce the name
+                	timer = new Timer();
+            		timerTask = new TimerTask() {
+
+            			@Override
+            			public void run() {
+                            //Unsilence and return audio focus
+                            MainActivity.mAudioManager.setRingerMode(ringMode);
+                            MainActivity.mAudioManager.abandonAudioFocus(MainActivity.afChangeListener);
+            			}	
+            		};		
+            		timer.schedule(timerTask, 4000);
+                    
                     break;
             }
         }
