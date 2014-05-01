@@ -43,19 +43,20 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity {
 
 	public static final String TAG = "ListenUpMain";
+	
+	/* Audio record stuff */
     static final int SAMPLE_RATE = 8000;
     private int bufferSize;
     private short[] buffer;
     private AudioRecord recorder;
+    private AudioTrack audioTrack;
     public static boolean running;
     private boolean mIsRecording;
-    //private AudioEvent audioEvent;
-	public static AudioManager mAudioManager;
-	private AudioTrack audioTrack;
-	public static OnAudioFocusChangeListener afChangeListener;
-    private NotificationManager mNotificationManager;
     public int timer = 20;
     private int musicVolume;
+    //private AudioEvent audioEvent;
+	
+    /* Settings stuff */
     private boolean timeToUpdateMaxAmpBar = false;
     public static boolean careAboutMusic = true;
     public static boolean careAboutLoud = true;
@@ -65,12 +66,18 @@ public class MainActivity extends Activity {
     public boolean defaultCallSetting = true;
     public boolean defaultMusicSetting = true;
     public int defaultSensitivity = 60;
-    public static TextToSpeech ttobj;
+   
     private boolean shouldDestroyOnBack;
     private long shouldDestroyOnBackTime;
     private Toast toast;
     private SharedPreferences sharedPref;
     public static String sharedFilename = "ListenUpSharedFile";
+    
+    /* Notify, audio manager, text to speech stuff */
+    public static AudioManager mAudioManager;
+	public static OnAudioFocusChangeListener afChangeListener;
+    private NotificationManager mNotificationManager;
+    public static TextToSpeech ttobj;
     
 	/* Timer stuff */
 	private Timer timeoutTimer = new Timer();
@@ -82,6 +89,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		//Initialize everything
         this.initalizeAudioListener();
         this.initializeAudioManager();
         this.initializeMaxAmpBar();
@@ -308,7 +316,7 @@ public class MainActivity extends Activity {
                 .setContentTitle("ListenUp! is running")
                 .setContentText("Click to resume")
                 .setOngoing(true);
-		// Creates an explicit intent for an Activity in your app
+		// Creates an explicit intent 
 		Intent resultIntent = new Intent(this, MainActivity.class);
 
 		// mNotifyId allows you to update the notification later on.
@@ -389,10 +397,10 @@ public class MainActivity extends Activity {
         }
     }
     
-    
+ // STEP 2: setup AudioTrack - for audio output
     private void initializeAudioTrack() {
-    		// STEP 2: setup AudioTrack - for audio output
-    		audioTrack = new AudioTrack(
+    		
+    	audioTrack = new AudioTrack(
     		AudioManager.STREAM_MUSIC,
     		SAMPLE_RATE,
     		AudioFormat.CHANNEL_OUT_MONO,
@@ -401,7 +409,7 @@ public class MainActivity extends Activity {
     		AudioTrack.MODE_STREAM);
     }
     
- // STEP 3: while the audio is recording, play back the audio
+    // STEP 3: while the audio is recording, play back the audio
  	public void loopbackAudio(int maxAmp) {
  		
  		int result = 0;
@@ -413,7 +421,7 @@ public class MainActivity extends Activity {
 	                // Use the music stream.
 	                AudioManager.STREAM_MUSIC,
 	                // Request transient focus.
-	                AudioManager.AUDIOFOCUS_GAIN);
+	                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
  		}
 
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED || !this.careAboutMusic) {
@@ -450,7 +458,6 @@ public class MainActivity extends Activity {
  				
         	}
         	
-        	
             //Pause for a bit after playback
         	timeoutTimer = new Timer();
     		timerTask = new TimerTask() {
@@ -469,6 +476,7 @@ public class MainActivity extends Activity {
         }
         
  	}
+ 	
     /**
      * This sets up a buffer and instantiates a recorder that we will use to detect sound
      */
@@ -480,6 +488,10 @@ public class MainActivity extends Activity {
         //this.audioEvent = new AudioEvent(format, this.buffer.length);
     }
 
+    
+    /**
+     * This sets up an AudioManager object to manage audio focus
+     */
     private void initializeAudioManager() {
         //Audio Manager
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
